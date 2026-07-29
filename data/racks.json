@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "Rack A",
+    "size": 42,
+    "notes": "Main compute rack"
+  },
+  {
+    "id": 2,
+    "name": "Rack A",
+    "size": 42,
+    "notes": "Main compute rack"
+  }
+]

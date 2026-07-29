@@ -1,35 +1,49 @@
-require "json"
+# frozen_string_literal: true
+
+require 'json'
 
 module RedfishInventory
   module Commands
     class Assets
       def self.run(action, arguments)
         case action
-        when "list"
+        when 'list'
           list
-        when "show"
+        when 'show'
           show(arguments[0])
-        when "update-json"
+        when 'update-json'
           update_json(arguments[0], arguments[1])
-        when "update-asset"
+        when 'update-asset'
           update_asset(arguments[0], arguments.drop(1))
-        when "delete-asset"
+        when 'delete-asset'
           delete(arguments[0])
-        else 
+        when 'create-asset'
+          create(arguments[0], arguments.drop(1))
+        else
           puts "Unknown assets action: #{action}"
-        end 
+        end
       end
+
       def self.list
-        file_path = File.expand_path("../../../data/assets.json", __dir__)
+        # Production:
+        # assets = ApiClient.get("/assets")
+        # puts JSON.pretty_generate(assets)
+
+        # demo code
+        file_path = File.expand_path('../../../data/assets.json', __dir__)
         assets = JSON.parse(File.read(file_path))
+        # remove above
         puts assets
       end
 
       def self.show(id)
         if id.nil?
-          puts "Usage: assets show <id>"
+          puts 'Usage: assets show <id>'
           return
         end
+
+        puts 'Usage: assets show <id>'
+        nil
 
         # Production:
         # asset = ApiClient.get("/assets/#{id}")
@@ -44,28 +58,28 @@ module RedfishInventory
 
         raw_json = JSON.parse(File.read(file_path))
 
-        payload = {
+        {
           json: raw_json
         }
-        #uncomment line below for real deployment
-        #ApiClient.post("/assets/#{id}", payload)
-        
-        #demo code remove in deployment
-          assets_file = File.expand_path("../../../data/assets.json", __dir__)
-          assets = JSON.parse(File.read(assets_file))
-          asset = assets.find do |asset|
-            asset["id"] == id.to_i
-          end
-          unless asset
-            puts "Asset #{id} not found"
-            return
-          end
-          asset["json"] = raw_json
-          File.write(
-            assets_file,
-            JSON.pretty_generate(assets)
-          )
-          puts "JSON added to asset #{id}"
+        # uncomment line below for real deployment
+        # ApiClient.post("/assets/#{id}", payload)
+
+        # demo code remove in deployment
+        assets_file = File.expand_path('../../../data/assets.json', __dir__)
+        assets = JSON.parse(File.read(assets_file))
+        asset = assets.find do |asset|
+          asset['id'] == id.to_i
+        end
+        unless asset
+          puts "Asset #{id} not found"
+          return
+        end
+        asset['json'] = raw_json
+        File.write(
+          assets_file,
+          JSON.pretty_generate(assets)
+        )
+        puts "JSON added to asset #{id}"
       end
 
       def self.update_asset(id, updates)
@@ -77,11 +91,11 @@ module RedfishInventory
         payload = {}
 
         updates.each do |update|
-          field, value = update.split("=", 2)
+          field, value = update.split('=', 2)
 
           if field.nil? || value.nil?
             puts "Invalid update: #{update}"
-            puts "Use the format field=value"
+            puts 'Use the format field=value'
             return
           end
 
@@ -92,11 +106,11 @@ module RedfishInventory
         # ApiClient.patch("/assets/#{id}", payload)
 
         # Demo only:
-        assets_file = File.expand_path("../../../data/assets.json", __dir__)
+        assets_file = File.expand_path('../../../data/assets.json', __dir__)
         assets = JSON.parse(File.read(assets_file))
 
         asset = assets.find do |asset|
-          asset["id"] == id.to_i
+          asset['id'] == id.to_i
         end
 
         unless asset
@@ -112,7 +126,7 @@ module RedfishInventory
           assets_file,
           JSON.pretty_generate(assets)
         )
-        #remove above till last comment
+        # remove above till last comment
 
         puts "Asset #{id} updated"
         puts JSON.pretty_generate(payload)
@@ -120,7 +134,7 @@ module RedfishInventory
 
       def self.delete(id)
         if id.nil?
-          puts "Usage: assets delete <id>"
+          puts 'Usage: assets delete <id>'
           return
         end
 
@@ -128,11 +142,11 @@ module RedfishInventory
         # ApiClient.delete("/assets/#{id}")
 
         # Demo only — remove this section for production
-        assets_file = File.expand_path("../../../data/assets.json", __dir__)
+        assets_file = File.expand_path('../../../data/assets.json', __dir__)
         assets = JSON.parse(File.read(assets_file))
 
         asset = assets.find do |asset|
-          asset["id"] == id.to_i
+          asset['id'] == id.to_i
         end
 
         unless asset
@@ -152,24 +166,202 @@ module RedfishInventory
       end
 
       def self.show_version(id, index)
-
         if id.nil? || index.nil?
-
-          puts "Usage: assets show-version <id> <index>"
-
+          puts 'Usage: assets show-version <id> <index>'
           return
+        end
 
+        if index.to_i.negative?
+          puts 'Index must be 0 or higher'
+          return
         end
 
         # Production:
-
         # asset = ApiClient.get("/assets/#{id}/#{index}")
-
         # puts JSON.pretty_generate(asset)
-
+        puts "getting version #{index} of asset #{id}"
       end
 
+      def self.create(file_path, arguments)
+        if file_path.nil?
+          puts 'Usage: assets create-asset <json-file> name="Server 1" rackId=1 size=2 position=4'
+          return
+        end
+
+        unless File.exist?(file_path)
+          puts "File not found: #{file_path}"
+          return
+        end
+
+        fields = {
+          'name' => '',
+          'rackId' => '',
+          'size' => '',
+          'position' => ''
+        }
+
+        arguments.each do |argument|
+          key, value = argument.split('=', 2)
+          fields[key] = value
+        end
+
+        if fields['name'].empty? ||
+           fields['rackId'].empty? ||
+           fields['size'].empty? ||
+           fields['position'].empty?
+          puts 'Usage: assets create-asset <json-file> name="Server 1" rackId=1 size=2 position=4'
+          return
+        end
+
+        begin
+          json_text = File.read(file_path)
+          parsed_json = JSON.parse(json_text)
+        rescue JSON::ParserError
+          puts 'The supplied file does not contain valid JSON'
+          return
+        end
+
+        print 'Search JSON fields: '
+        search_term = $stdin.gets&.chomp
+
+        if search_term.nil? || search_term.empty?
+          puts 'Please enter a search term'
+          return
+        end
+
+        matches = find_matching_paths(parsed_json, search_term)
+
+        if matches.empty?
+          puts 'No matching JSON fields found'
+          return
+        end
+
+        matches.each_with_index do |match, index|
+          puts
+          puts "#{index + 1}. #{match['path']} = #{match['value'].inspect}"
+        end
+
+        print "\nSelect a path number: "
+        selection = $stdin.gets&.chomp.to_i
+
+        if selection < 1 || selection > matches.length
+          puts 'Invalid selection'
+          return
+        end
+
+        selected_match = matches[selection - 1]
+
+        print 'Enter a name for this field: '
+        field_name = $stdin.gets&.chomp
+
+        field_name = selected_match['path'] if field_name.nil? || field_name.empty?
+
+        data_fields = [
+          {
+            'name' => field_name,
+            'path' => selected_match['path']
+          }
+        ]
+
+        payload = {
+          'rackId' => fields['rackId'].to_i,
+          'name' => fields['name'],
+          'size' => fields['size'].to_i,
+          'position' => fields['position'].to_i,
+          'data' => data_fields,
+          'json' => {
+            'text' => json_text,
+            'filename' => File.basename(file_path)
+          }
+        }
+
+        # Production code — uncomment this when using the real API
+        # asset = ApiClient.post('/assets', payload)
+
+        # Demo only — delete everything between these comments for production
+        assets_file = File.expand_path('../../../data/assets.json', __dir__)
+        assets = JSON.parse(File.read(assets_file))
+
+        next_id =
+          if assets.empty?
+            1
+          else
+            assets.map { |asset| asset['id'] }.max + 1
+          end
+
+        asset = {
+          'id' => next_id,
+          **payload
+        }
+
+        assets << asset
+
+        File.write(
+          assets_file,
+          JSON.pretty_generate(assets)
+        )
+        # End demo-only section — delete everything above this comment for production
+
+        puts 'Asset created successfully'
+
+        puts JSON.pretty_generate(
+          {
+            'id' => asset['id'],
+            'name' => asset['name'],
+            'rackId' => asset['rackId'],
+            'size' => asset['size'],
+            'position' => asset['position'],
+            'data' => asset['data'],
+            'json' => {
+              'filename' => File.basename(file_path)
+            }
+          }
+        )
+      end
+
+      def self.find_matching_paths(data, search_term, base_path = '')
+        matches = []
+
+        return matches if search_term.nil? || search_term.empty? || data.nil?
+
+        if data.is_a?(Array)
+
+          data.each_with_index do |item, index|
+            path = base_path.empty? ? index.to_s : "#{base_path}.#{index}"
+
+            matches.concat(
+              find_matching_paths(item, search_term, path)
+            )
+          end
+
+          return matches
+        end
+
+        return matches unless data.is_a?(Hash)
+
+        data.each do |key, value|
+          path = base_path.empty? ? key : "#{base_path}.#{key}"
+
+          if key.downcase.include?(search_term.downcase)
+
+            matches << {
+              'path' => path,
+              'value' => value
+            }
+
+          end
+
+          matches.concat(
+            find_matching_paths(value, search_term, path)
+          )
+        end
+
+        matches
+      end
+
+      def self.select_data_fields(_parsed_json)
+        []
+      end
     end
   end
 end
-

@@ -9,14 +9,12 @@ module RedfishInventory
       when "assets"
         Commands::Assets.run(action, arguments.drop(2))
       when "racks"
-        puts "Racks command: #{action}"
+        Commands::Racks.run(action, arguments.drop(2))
       else
         puts "Usage:"
         puts "  redfish-inventory assets <action>"
         puts "  redfish-inventory racks <action>"
       end
-
-
 
     end
   end
