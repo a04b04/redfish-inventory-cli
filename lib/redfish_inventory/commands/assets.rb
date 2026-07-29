@@ -372,7 +372,7 @@ module RedfishInventory
         if data.is_a?(Array)
 
           data.each_with_index do |item, index|
-            path = base_path.empty? ? index.to_s : "#{base_path}.#{index}"
+            path = base_path.empty? ? index.to_s : "#{base_path}/#{index}"
 
             matches.concat(
               find_matching_paths(item, search_term, path)
@@ -385,7 +385,7 @@ module RedfishInventory
         return matches unless data.is_a?(Hash)
 
         data.each do |key, value|
-          path = base_path.empty? ? key : "#{base_path}.#{key}"
+          path = base_path.empty? ? key : "#{base_path}/#{key}"
 
           if key.downcase.include?(search_term.downcase)
 
