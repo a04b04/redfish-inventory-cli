@@ -221,47 +221,92 @@ module RedfishInventory
           return
         end
 
-        print 'Search JSON fields: '
-        search_term = $stdin.gets&.chomp
+        data_fields = []
+        loop do
+          print 'Search JSON fields: '
+          search_term = $stdin.gets&.chomp
 
-        if search_term.nil? || search_term.empty?
-          puts 'Please enter a search term'
-          return
-        end
+          if search_term.nil? || search_term.empty?
+            puts 'Please enter a search term'
+            next
+          end
 
-        matches = find_matching_paths(parsed_json, search_term)
+          matches = find_matching_paths(parsed_json, search_term)
 
-        if matches.empty?
-          puts 'No matching JSON fields found'
-          return
-        end
+          if matches.empty?
+            puts 'No matching JSON fields found'
+            next
+          end
 
-        matches.each_with_index do |match, index|
+          matches.each_with_index do |match, index|
+            puts
+            puts "#{index + 1}. #{match['path']} = #{match['value'].inspect}"
+          end
+
+          print "\nSelect path numbers separated by commas: "
+          input = $stdin.gets&.chomp
+
+          selections = input
+                       .to_s
+                       .split(',')
+                       .map(&:strip)
+                       .reject(&:empty?)
+                       .map(&:to_i)
+                       .uniq
+
+          invalid_selections = selections.select do |selection|
+            selection < 1 || selection > matches.length
+          end
+
+          if selections.empty?
+            puts 'Please select at least one path'
+            next
+          end
+
+          unless invalid_selections.empty?
+            puts "Invalid selections: #{invalid_selections.join(', ')}"
+            next
+          end
+
+          selections.each do |selection|
+            selected_match = matches[selection - 1]
+            puts
+            puts 'Enter a name for:'
+            puts selected_match['path']
+            print '> '
+
+            field_name = $stdin.gets&.chomp
+            field_name = selected_match['path'] if field_name.nil? || field_name.empty?
+
+            data_fields << {
+              'name' => field_name,
+              'path' => selected_match['path']
+            }
+          end
+
           puts
-          puts "#{index + 1}. #{match['path']} = #{match['value'].inspect}"
+          puts 'Selected fields:'
+
+          data_fields.each_with_index do |field, index|
+            puts "#{index + 1}. #{field['name']} — #{field['path']}"
+          end
+
+          puts
+          puts '1. Search for more fields'
+          puts '2. Submit asset'
+          print 'Select an option: '
+
+          next_action = $stdin.gets&.chomp
+
+          case next_action
+          when '1'
+            next
+          when '2'
+            break
+          else
+            puts 'Invalid option. Returning to search.'
+          end
         end
-
-        print "\nSelect a path number: "
-        selection = $stdin.gets&.chomp.to_i
-
-        if selection < 1 || selection > matches.length
-          puts 'Invalid selection'
-          return
-        end
-
-        selected_match = matches[selection - 1]
-
-        print 'Enter a name for this field: '
-        field_name = $stdin.gets&.chomp
-
-        field_name = selected_match['path'] if field_name.nil? || field_name.empty?
-
-        data_fields = [
-          {
-            'name' => field_name,
-            'path' => selected_match['path']
-          }
-        ]
 
         payload = {
           'rackId' => fields['rackId'].to_i,
