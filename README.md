@@ -10,7 +10,7 @@ The CLI can also run in a local demo mode using JSON files instead of the produc
 
 The CLI can:
 
-- List all racks
+- List all racks◊
 - Show a specific rack
 - Create a rack
 - Update a rack
