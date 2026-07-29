@@ -19,6 +19,8 @@ module RedfishInventory
           delete(arguments[0])
         when 'create-asset'
           create(arguments[0], arguments.drop(1))
+        when 'show-version'
+          show_version(arguments[0], arguments[1])
         else
           puts "Unknown assets action: #{action}"
         end
@@ -387,6 +389,22 @@ module RedfishInventory
       def self.select_data_fields(_parsed_json)
         []
       end
+
+      def self.show_version(id, index)
+        if id.nil? || index.nil?
+          puts 'Usage: assets show-version <id> <index>'
+          return
+        end
+
+        if index.to_i.negative?
+          puts 'Index must be 0 or higher'
+          return
+        end
+
+        asset = ApiClient.get("/assets/#{id}/#{index}")
+        puts JSON.pretty_generate(asset)
+      end
+      
     end
   end
 end
