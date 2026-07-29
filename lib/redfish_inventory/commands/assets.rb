@@ -26,14 +26,8 @@ module RedfishInventory
 
       def self.list
         # Production:
-        # assets = ApiClient.get("/assets")
-        # puts JSON.pretty_generate(assets)
-
-        # demo code
-        file_path = File.expand_path('../../../data/assets.json', __dir__)
-        assets = JSON.parse(File.read(file_path))
-        # remove above
-        puts assets
+         assets = ApiClient.get("/assets")
+         puts JSON.pretty_generate(assets)
       end
 
       def self.show(id)
@@ -46,39 +40,39 @@ module RedfishInventory
         nil
 
         # Production:
-        # asset = ApiClient.get("/assets/#{id}")
-        # puts JSON.pretty_generate(asset)
+        asset = ApiClient.get("/assets/#{id}")
+        puts JSON.pretty_generate(asset)
       end
 
       def self.update_json(id, file_path)
+        if id.nil? || file_path.nil?
+          puts 'Usage: assets update-json <id> <json-file>'
+          return
+        end
+
         unless File.exist?(file_path)
           puts "File not found: #{file_path}"
           return
         end
 
-        raw_json = JSON.parse(File.read(file_path))
+        json_text = File.read(file_path)
 
-        {
-          json: raw_json
-        }
-        # uncomment line below for real deployment
-        # ApiClient.post("/assets/#{id}", payload)
-
-        # demo code remove in deployment
-        assets_file = File.expand_path('../../../data/assets.json', __dir__)
-        assets = JSON.parse(File.read(assets_file))
-        asset = assets.find do |asset|
-          asset['id'] == id.to_i
-        end
-        unless asset
-          puts "Asset #{id} not found"
+        begin
+          JSON.parse(json_text)
+        rescue JSON::ParserError
+          puts 'The supplied file does not contain valid JSON'
           return
         end
-        asset['json'] = raw_json
-        File.write(
-          assets_file,
-          JSON.pretty_generate(assets)
-        )
+
+        payload = {
+          'json' => {
+            'text' => json_text,
+            'filename' => File.basename(file_path)
+          }
+        }
+
+        response = ApiClient.post("/assets/#{id}", payload)
+
         puts "JSON added to asset #{id}"
       end
 
@@ -88,7 +82,14 @@ module RedfishInventory
           return
         end
 
-        payload = {}
+        asset = ApiClient.get("/assets/#{id}")
+
+        payload = {
+          'name' => asset['name'],
+          'rackId' => asset['rackId'],
+          'size' => asset['size'],
+          'position' => asset['position']
+        }
 
         updates.each do |update|
           field, value = update.split('=', 2)
@@ -102,34 +103,13 @@ module RedfishInventory
           payload[field] = value
         end
 
-        # Production:
-        # ApiClient.patch("/assets/#{id}", payload)
-
-        # Demo only:
-        assets_file = File.expand_path('../../../data/assets.json', __dir__)
-        assets = JSON.parse(File.read(assets_file))
-
-        asset = assets.find do |asset|
-          asset['id'] == id.to_i
+        %w[rackId size position].each do |field|
+          payload[field] = payload[field].to_i
         end
 
-        unless asset
-          puts "Asset #{id} not found"
-          return
-        end
-
-        payload.each do |field, value|
-          asset[field] = value
-        end
-
-        File.write(
-          assets_file,
-          JSON.pretty_generate(assets)
-        )
-        # remove above till last comment
+        updated_asset = ApiClient.patch("/assets/#{id}", payload)
 
         puts "Asset #{id} updated"
-        puts JSON.pretty_generate(payload)
       end
 
       def self.delete(id)
@@ -139,27 +119,27 @@ module RedfishInventory
         end
 
         # Production:
-        # ApiClient.delete("/assets/#{id}")
+        ApiClient.delete("/assets/#{id}")
 
         # Demo only — remove this section for production
-        assets_file = File.expand_path('../../../data/assets.json', __dir__)
-        assets = JSON.parse(File.read(assets_file))
+        # assets_file = File.expand_path('../../../data/assets.json', __dir__)
+        # assets = JSON.parse(File.read(assets_file))
 
-        asset = assets.find do |asset|
-          asset['id'] == id.to_i
-        end
+        # asset = assets.find do |asset|
+        #   asset['id'] == id.to_i
+        # end
 
-        unless asset
-          puts "Asset #{id} not found"
-          return
-        end
+        # unless asset
+        #   puts "Asset #{id} not found"
+        #   return
+        # end
 
-        assets.delete(asset)
+        # assets.delete(asset)
 
-        File.write(
-          assets_file,
-          JSON.pretty_generate(assets)
-        )
+        # File.write(
+        #   assets_file,
+        #   JSON.pretty_generate(assets)
+        # )
         # End demo-only section
 
         puts "Asset #{id} deleted"
@@ -321,30 +301,30 @@ module RedfishInventory
         }
 
         # Production code — uncomment this when using the real API
-        # asset = ApiClient.post('/assets', payload)
+        asset = ApiClient.post('/assets', payload)
 
         # Demo only — delete everything between these comments for production
-        assets_file = File.expand_path('../../../data/assets.json', __dir__)
-        assets = JSON.parse(File.read(assets_file))
+        # assets_file = File.expand_path('../../../data/assets.json', __dir__)
+        # assets = JSON.parse(File.read(assets_file))
 
-        next_id =
-          if assets.empty?
-            1
-          else
-            assets.map { |asset| asset['id'] }.max + 1
-          end
+        # next_id =
+        #   if assets.empty?
+        #     1
+        #   else
+        #     assets.map { |asset| asset['id'] }.max + 1
+        #   end
 
-        asset = {
-          'id' => next_id,
-          **payload
-        }
+        # asset = {
+        #   'id' => next_id,
+        #   **payload
+        # }
 
-        assets << asset
+        # assets << asset
 
-        File.write(
-          assets_file,
-          JSON.pretty_generate(assets)
-        )
+        # File.write(
+        #   assets_file,
+        #   JSON.pretty_generate(assets)
+        # )
         # End demo-only section — delete everything above this comment for production
 
         puts 'Asset created successfully'
