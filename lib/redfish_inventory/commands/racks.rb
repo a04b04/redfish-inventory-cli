@@ -187,28 +187,28 @@ module RedfishInventory
         puts "Rack #{id} deleted"
       end
 
-      def self.list_assets(id)
-        if id.nil?
-          puts 'Usage: racks list-assets <id>'
+      def self.list_assets(rack_id)
+        if rack_id.nil?
+          puts 'Usage: racks list-assets <rack-id>'
           return
         end
-        # Production:
-        assets = ApiClient.get("/racks/#{id}/assets")
-        puts JSON.pretty_generate(assets)
-        
-        # Demo only below
-        # assets_file = File.expand_path('../../../data/assets.json', __dir__)
 
-        # assets = JSON.parse(File.read(assets_file))
+        assets = fetch_assets(rack_id)
 
-        # rack_assets = assets.select do |asset|
-        #   asset['rackId'] == id.to_i
-        # end
+        if assets.empty?
+          puts "No assets found in rack #{rack_id}"
+          return
+        end
 
-        # puts JSON.pretty_generate(rack_assets)
-
-        # End demo-only section
+        assets.each do |asset|
+          Commands::Assets.print_asset_summary(asset)
+        end
       end
+
+      def self.fetch_assets(rack_id)
+        ApiClient.get("/racks/#{rack_id}/assets")
+      end
+      
     end
   end
 end

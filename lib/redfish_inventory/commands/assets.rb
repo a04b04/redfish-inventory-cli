@@ -34,20 +34,15 @@ module RedfishInventory
         puts "Size: #{asset['size']}U"
         puts "Position: #{asset['position']}"
 
-        json_text = asset.dig('json', 'text')
         data_fields = asset['data'] || []
 
-        return if json_text.nil? || data_fields.empty?
+        unless data_fields.empty?
+          puts 'Data:'
 
-        parsed_json = JSON.parse(json_text)
-
-        puts 'Data:'
-
-        data_fields.each do |field|
-          value = value_at_path(parsed_json, field['path'])
-          puts "#{field['name']}: #{value}"
+          data_fields.each do |field|
+            puts "#{field['name']}: #{field['value']}"
+          end
         end
-
         puts '-' * 40
 
 
@@ -125,7 +120,7 @@ module RedfishInventory
           return
         end
 
-        unless File.exist?(file_path)
+        unless File.file?(file_path)
           puts "File not found: #{file_path}"
           return
         end
@@ -134,8 +129,8 @@ module RedfishInventory
 
         begin
           JSON.parse(json_text)
-        rescue JSON::ParserError
-          puts 'The supplied file does not contain valid JSON'
+        rescue JSON::ParserError => error
+          puts "Invalid JSON file: #{error.message}"
           return
         end
 
@@ -146,9 +141,10 @@ module RedfishInventory
           }
         }
 
-        response = ApiClient.post("/assets/#{id}", payload)
+        updated_asset = ApiClient.post("/assets/#{id}", payload)
 
-        puts "JSON added to asset #{id}"
+        puts "JSON updated for asset #{id}"
+        print_asset_summary(updated_asset)
       end
 
       def self.update_asset(id, updates)
@@ -157,34 +153,31 @@ module RedfishInventory
           return
         end
 
-        asset = ApiClient.get("/assets/#{id}")
+        payload =
+          if updates.is_a?(Hash)
+            updates.dup
+          else
+            updates.each_with_object({}) do |update, result|
+              field, value = update.split('=', 2)
 
-        payload = {
-          'name' => asset['name'],
-          'rackId' => asset['rackId'],
-          'size' => asset['size'],
-          'position' => asset['position']
-        }
+              if field.nil? || value.nil?
+                puts "Invalid update: #{update}"
+                puts 'Use the format field=value'
+                return
+              end
 
-        updates.each do |update|
-          field, value = update.split('=', 2)
-
-          if field.nil? || value.nil?
-            puts "Invalid update: #{update}"
-            puts 'Use the format field=value'
-            return
+              result[field] = value
+            end
           end
 
-          payload[field] = value
-        end
-
         %w[rackId size position].each do |field|
-          payload[field] = payload[field].to_i
+          payload[field] = payload[field].to_i if payload.key?(field)
         end
 
         updated_asset = ApiClient.patch("/assets/#{id}", payload)
 
         puts "Asset #{id} updated"
+        print_asset_summary(updated_asset)
       end
 
       def self.delete(id)
@@ -226,15 +219,18 @@ module RedfishInventory
           return
         end
 
-        if index.to_i.negative?
-          puts 'Index must be 0 or higher'
-          return
-        end
+        asset = ApiClient.get("/assets/#{id}/#{index}")
 
-        # Production:
-        # asset = ApiClient.get("/assets/#{id}/#{index}")
-        # puts JSON.pretty_generate(asset)
-        puts "getting version #{index} of asset #{id}"
+        puts "Asset #{id}, version #{index}"
+        print_asset_summary(asset)
+
+        json_text = asset.dig('json', 'text')
+
+        unless json_text.nil? || json_text.empty?
+          puts
+          puts 'JSON:'
+          puts JSON.pretty_generate(JSON.parse(json_text))
+        end
       end
 
       def self.create(file_path, arguments)
@@ -452,6 +448,25 @@ module RedfishInventory
         asset = ApiClient.get("/assets/#{id}/#{index}")
         puts JSON.pretty_generate(asset)
       end
+
+      def self.fetch_version(id, index)
+        ApiClient.get("/assets/#{id}/#{index}")
+      end
+
+      def self.print_json(asset)
+        json_text = asset.dig('json', 'text')
+
+        if json_text.nil? || json_text.empty?
+          puts 'No JSON stored for this version'
+          return
+        end
+
+        puts JSON.pretty_generate(JSON.parse(json_text))
+      rescue JSON::ParserError
+        puts json_text
+      end
+
+      
       
     end
   end
