@@ -26,10 +26,77 @@ module RedfishInventory
         end
       end
 
+      def self.print_asset_summary(asset)
+        puts ""
+        puts "ID #{asset['id']}"
+        puts "Name #{asset['name']}"
+        puts "Rack #{asset['rackId']}"
+        puts "Size: #{asset['size']}U"
+        puts "Position: #{asset['position']}"
+
+        json_text = asset.dig('json', 'text')
+        data_fields = asset['data'] || []
+
+        return if json_text.nil? || data_fields.empty?
+
+        parsed_json = JSON.parse(json_text)
+
+        puts 'Data:'
+
+        data_fields.each do |field|
+          value = value_at_path(parsed_json, field['path'])
+          puts "#{field['name']}: #{value}"
+        end
+
+        puts '-' * 40
+
+
+      end
+
+      def self.value_at_path(json, path)
+        path.split('/').reduce(json) do |current, part|
+          if current.is_a?(Array)
+            current[part.to_i]
+          elsif current.is_a?(Hash)
+            current[part]
+          end
+        end
+      end
+
+
+      # Methods for what the API allows below 
       def self.list
-        # Production:
-         assets = ApiClient.get("/assets")
-         puts JSON.pretty_generate(assets)
+        assets = ApiClient.get("/assets")
+
+        assets.each do |asset|
+          print_asset_summary(asset)
+        end
+
+        print "\nWould you like to see JSON? (y/n):"
+        answer = $stdin.gets&.chomp&.downcase 
+        return unless answer == 'y'
+
+        print "Enter asset ID's separated by commas:"
+        input = $stdin.gets&.chomp
+
+        selected_ids =  input
+                        .to_s
+                        .split(',')
+                        .map(&:strip)
+                        .reject(&:empty?)
+                        .map(&:to_i)
+                        .uniq
+        selected_ids.each do |id|
+          asset = assets.find { |item| item['id'] == id}
+
+          unless asset 
+            puts "Asset #{id} not found"
+            next
+          end
+          puts 
+          puts "JSON for asset #{id}:"
+          puts JSON.pretty_generate(JSON.parse(asset.dig('json', 'text')))
+        end
       end
 
       def self.show(id)
@@ -37,14 +104,20 @@ module RedfishInventory
           puts 'Usage: assets show <id>'
           return
         end
-
-        puts 'Usage: assets show <id>'
-        nil
-
-        # Production:
         asset = ApiClient.get("/assets/#{id}")
-        puts JSON.pretty_generate(asset)
+        print_asset_summary(asset)
+
+        print "\nWould you like to see JSON? (y/n)"
+        answer = $stdin.gets&.chomp&.downcase
+        
+        return unless answer == 'y'
+        json_text = asset.dig('json', 'text')
+
+        puts 
+        puts "Json for asset #{id}"
+        puts JSON.pretty_generate(JSON.parse(json_text))
       end
+        
 
       def self.update_json(id, file_path)
         if id.nil? || file_path.nil?
@@ -258,7 +331,7 @@ module RedfishInventory
             print '> '
 
             field_name = $stdin.gets&.chomp
-            field_name = selected_match['path'] if field_name.nil? || field_name.empty?
+            field_name = selected_match['path'].split('/').last if field_name.nil? || field_name.empty?
 
             data_fields << {
               'name' => field_name,
@@ -302,32 +375,7 @@ module RedfishInventory
           }
         }
 
-        # Production code — uncomment this when using the real API
         asset = ApiClient.post('/assets', payload)
-
-        # Demo only — delete everything between these comments for production
-        # assets_file = File.expand_path('../../../data/assets.json', __dir__)
-        # assets = JSON.parse(File.read(assets_file))
-
-        # next_id =
-        #   if assets.empty?
-        #     1
-        #   else
-        #     assets.map { |asset| asset['id'] }.max + 1
-        #   end
-
-        # asset = {
-        #   'id' => next_id,
-        #   **payload
-        # }
-
-        # assets << asset
-
-        # File.write(
-        #   assets_file,
-        #   JSON.pretty_generate(assets)
-        # )
-        # End demo-only section — delete everything above this comment for production
 
         puts 'Asset created successfully'
 
