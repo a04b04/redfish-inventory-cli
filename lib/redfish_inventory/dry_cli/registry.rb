@@ -14,6 +14,7 @@ module RedfishInventory
       register 'assets update-json', Assets::UpdateJson
       register 'assets delete', Assets::Delete
       register 'assets show-version', Assets::ShowVersion
+      register 'assets add-data', Assets::AddData
 
       register 'racks list', Racks::List
       register 'racks show', Racks::Show

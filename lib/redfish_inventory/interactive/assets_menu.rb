@@ -26,6 +26,7 @@ module RedfishInventory
           menu.choice 'Create Asset', :create
           menu.choice 'Update Asset', :update
           menu.choice "Update JSON for an Asset", :update_json
+          menu.choice 'Add Data to an Asset', :add_data
           menu.choice 'Show Version', :show_version
           menu.choice 'Delete Asset', :delete_asset
           menu.choice 'Back', :back
@@ -46,6 +47,8 @@ module RedfishInventory
           update_json
         when :show_version
           show_version
+        when :add_data
+          add_data
         when :back
           return
 
@@ -253,6 +256,18 @@ module RedfishInventory
         return unless confirmed
 
         Commands::Assets.update_json(asset['id'], file_path)
+      end
+
+
+      def add_data 
+        asset = select_asset('Select an asset to add data:')
+        return if asset.nil?
+
+        Commands::Assets.add_data(asset['id'])
+
+        puts 
+        puts Theme.success("Data added to asset #{asset['name']} (ID: #{asset['id']})")
+        @prompt.keypress('Press any key to continue...')
       end
 
       def show_version

@@ -444,6 +444,102 @@ module RedfishInventory
         puts json_text
       end
 
+      def self.add_data(asset_id)
+        if asset_id.nil?
+          puts 'Usage: assets add-data <asset-id>'
+          return
+        end
+
+        asset = ApiClient.get("/assets/#{asset_id}")
+        json_text = asset.dig('json', 'text')
+        parsed_json = JSON.parse(json_text)
+
+        loop do
+          print 'Search JSON fields: '
+          search_term = $stdin.gets&.chomp
+
+          if search_term.nil? || search_term.empty?
+            puts 'Please enter a search term'
+            next
+          end
+
+          matches = find_matching_paths(parsed_json, search_term)
+
+          if matches.empty?
+            puts 'No matching JSON fields found'
+            next
+          end
+
+          matches.each_with_index do |match, index|
+            puts
+            puts "#{index + 1}. #{match['path']} = #{match['value'].inspect}"
+          end
+
+          print "\nSelect path numbers separated by commas: "
+          input = $stdin.gets&.chomp
+
+          selections = input
+                      .to_s
+                      .split(',')
+                      .map(&:strip)
+                      .reject(&:empty?)
+                      .map(&:to_i)
+                      .uniq
+
+          invalid_selections = selections.select do |selection|
+            selection < 1 || selection > matches.length
+          end
+
+          if selections.empty?
+            puts 'Please select at least one path'
+            next
+          end
+
+          unless invalid_selections.empty?
+            puts "Invalid selections: #{invalid_selections.join(', ')}"
+            next
+          end
+
+          selections.each do |selection|
+            selected_match = matches[selection - 1]
+
+            puts
+            puts 'Enter a name for:'
+            puts selected_match['path']
+            print '> '
+
+            field_name = $stdin.gets&.chomp
+
+            if field_name.nil? || field_name.empty?
+              field_name = selected_match['path'].split('/').last
+            end
+
+            payload = {
+              'name' => field_name,
+              'path' => selected_match['path']
+            }
+
+            added_data = ApiClient.post(
+              "/assets/#{asset_id}/paths",
+              payload
+            )
+
+            puts "Added #{added_data['name'] || field_name}"
+          end
+
+          puts
+          puts '1. Search for more fields'
+          puts '2. Finish'
+          print 'Select an option: '
+
+          next_action = $stdin.gets&.chomp
+
+          break if next_action == '2'
+        end
+
+        puts "Data added to asset #{asset_id}"
+      end
+
       
       
     end
