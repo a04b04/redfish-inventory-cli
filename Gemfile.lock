@@ -1,0 +1,16 @@
+GEM
+  specs:
+    dry-cli (1.4.1)
+
+PLATFORMS
+  arm64-darwin-25
+  ruby
+
+DEPENDENCIES
+  dry-cli
+
+CHECKSUMS
+  dry-cli (1.4.1)
+
+BUNDLED WITH
+  4.0.10
