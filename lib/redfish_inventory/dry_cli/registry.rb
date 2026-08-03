@@ -15,6 +15,7 @@ module RedfishInventory
       register 'assets delete', Assets::Delete
       register 'assets show-version', Assets::ShowVersion
       register 'assets add-data', Assets::AddData
+      register 'assets delete-data', Assets::DeleteData
 
       register 'racks list', Racks::List
       register 'racks show', Racks::Show

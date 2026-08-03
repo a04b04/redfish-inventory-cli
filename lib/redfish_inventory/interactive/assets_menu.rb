@@ -27,6 +27,7 @@ module RedfishInventory
           menu.choice 'Update Asset', :update
           menu.choice "Update JSON for an Asset", :update_json
           menu.choice 'Add Data to an Asset', :add_data
+          menu.choice 'Delete Data from an Asset', :delete_data
           menu.choice 'Show Version', :show_version
           menu.choice 'Delete Asset', :delete_asset
           menu.choice 'Back', :back
@@ -49,6 +50,8 @@ module RedfishInventory
           show_version
         when :add_data
           add_data
+        when :delete_data
+          delete_data
         when :back
           return
 
@@ -267,6 +270,56 @@ module RedfishInventory
 
         puts 
         puts Theme.success("Data added to asset #{asset['name']} (ID: #{asset['id']})")
+        @prompt.keypress('Press any key to continue...')
+      end
+
+      def delete_data
+        asset = select_asset('Select an asset to remove data from:')
+        return if asset.nil?
+
+        data_fields = asset['data'] || []
+
+        if data_fields.empty?
+          puts Theme.warning("Asset '#{asset['name']}' has no tracked data")
+          @prompt.keypress('Press any key to continue...')
+          return
+        end
+
+        choices = data_fields.map do |field|
+          {
+            name: "#{field['name']}: #{field['value']}",
+            value: field
+          }
+        end
+
+        choices << {
+          name: 'Back',
+          value: :back
+        }
+
+        field = @prompt.select(
+          'Select a data field to delete:',
+          choices,
+          cycle: true
+        )
+
+        return if field == :back
+
+        confirmed = @prompt.yes?(
+          "Delete '#{field['name']}' from #{asset['name']}?"
+        )
+
+        return unless confirmed
+
+        ApiClient.delete(
+          "/assets/#{asset['id']}/paths/#{field['id']}"
+        )
+
+        puts
+        puts Theme.success(
+          "'#{field['name']}' was removed from #{asset['name']}"
+        )
+
         @prompt.keypress('Press any key to continue...')
       end
 

@@ -540,6 +540,44 @@ module RedfishInventory
         puts "Data added to asset #{asset_id}"
       end
 
+      def self.delete_data(asset_id)
+        asset = ApiClient.get("/assets/#{asset_id}")
+        data_fields = asset['data'] || []
+
+        if data_fields.empty?
+          puts "Asset #{asset_id} has no tracked data"
+          return
+        end
+
+        puts
+        puts "Tracked data for asset #{asset_id}:"
+        puts
+
+        data_fields.each_with_index do |field, index|
+          puts "#{index + 1}. #{field['name']}: #{field['value']}"
+        end
+
+        print "\nSelect a data field to delete: "
+        selection = $stdin.gets&.chomp.to_i
+
+        if selection < 1 || selection > data_fields.length
+          puts 'Invalid selection'
+          return
+        end
+
+        selected_field = data_fields[selection - 1]
+
+        print "Delete '#{selected_field['name']}'? (y/n): "
+        confirmed = $stdin.gets&.chomp&.downcase
+
+        return unless confirmed == 'y'
+
+        ApiClient.delete(
+          "/assets/#{asset_id}/paths/#{selected_field['id']}"
+        )
+        puts "'#{selected_field['name']}' deleted from asset #{asset_id}"
+      end
+
       
       
     end
