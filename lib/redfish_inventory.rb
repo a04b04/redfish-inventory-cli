@@ -17,6 +17,8 @@ require_relative 'redfish_inventory/dry_cli/assets/update'
 require_relative 'redfish_inventory/dry_cli/assets/update_json'
 require_relative 'redfish_inventory/dry_cli/assets/delete'
 require_relative 'redfish_inventory/dry_cli/assets/show_version'
+require_relative 'redfish_inventory/dry_cli/assets/add_data'
+require_relative 'redfish_inventory/dry_cli/assets/delete_data'
 
 require_relative 'redfish_inventory/dry_cli/racks/list'
 require_relative 'redfish_inventory/dry_cli/racks/show'
