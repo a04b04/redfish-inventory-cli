@@ -1,413 +1,241 @@
 # Redfish Inventory CLI
 
-A Ruby command-line application for managing hardware assets and racks through a Redfish Inventory REST API.
+A Ruby command-line application for managing server inventory using the Redfish API.
 
-The CLI allows users to create, manage and inspect racks and assets while interactively selecting useful Redfish fields from uploaded JSON files.
+The application supports both a fully interactive terminal interface and a traditional command-line interface powered by `dry-cli`.
 
 ---
 
 ## Features
 
-### Rack management
-
-The CLI can:
-
-- List all racks
-- Show a specific rack
-- Create a rack
-- Update a rack
-- Delete a rack
-- List all assets assigned to a rack
-
-### Asset management
-
-The CLI can:
+### Assets
 
 - List all assets
-- Show a specific asset
+- View an asset
 - Create an asset from a Redfish JSON file
-- Update editable asset fields
-- Update an asset's Redfish JSON
-- Delete an asset
-- View a previous asset version
+- Update asset information
+- Upload a new JSON version
+- Browse previous JSON versions
+- Add tracked data fields
+- Remove tracked data fields
+- Delete assets
+
+### Racks
+
+- List racks
+- View rack information
+- Create racks
+- Update racks
+- Delete racks
+- Browse assets within a rack
+
+### Interactive Mode
+
+- Menu-driven interface
+- Keyboard navigation
+- Asset and rack selection
+- Version browsing
+- JSON viewing
+- Guided asset creation
+- Guided asset updates
 
 ---
 
-## Interactive Redfish JSON Search
+# Installation
 
-When creating an asset, the CLI recursively searches through the uploaded Redfish JSON file.
+```bash
+git clone <repository>
+cd redfish-inventory-cli
+bundle install
+```
 
-It searches through:
+---
 
-- Nested objects
-- Arrays
-- Objects inside arrays
-- Vendor-specific Redfish extensions
+# Configuration
+
+Update the API URL inside:
+
+```
+lib/redfish_inventory/config.rb
+```
 
 Example:
 
-```text
-Search JSON fields: memory
-
-1. MemorySummary/TotalSystemMemoryGiB
-2. MemorySummary/MemoryMirroring
-3. Memory/0/CapacityMiB
-
-Select path numbers separated by commas:
-1,3
-```
-
-For every selected path the CLI asks for a display name:
-
-```text
-Enter a name for:
-MemorySummary/TotalSystemMemoryGiB
-
-> Total Memory
-```
-
-The user may continue searching for additional fields before submitting the asset.
-
-The stored field information looks like:
-
-```json
-{
-  "name": "Total Memory",
-  "path": "MemorySummary/TotalSystemMemoryGiB"
-}
-```
-
-Only the JSON path is stored.
-
-This allows the backend to retrieve the latest value from the stored Redfish JSON whenever required.
-
----
-
-# Project Structure
-
-```text
-redfish-inventory-cli/
-├── bin/
-│   └── redfish-inventory
-├── lib/
-│   ├── redfish_inventory.rb
-│   └── redfish_inventory/
-│       ├── api_client.rb
-│       ├── cli.rb
-│       ├── config.rb
-│       ├── errors.rb
-│       └── commands/
-│           ├── assets.rb
-│           └── racks.rb
-└── spec/
+```ruby
+API_URL = "http://localhost:3000/api/v1/"
 ```
 
 ---
 
-# Running the CLI
+# Interactive Mode
 
-Run commands from the project root.
+Launch the interactive interface:
 
 ```bash
-./bin/redfish-inventory <resource> <action> [arguments]
+redfish-inventory interactive
 ```
 
-Resources:
+or
 
-```text
-assets
-racks
+```bash
+redfish-inventory i
 ```
 
 ---
 
-# Asset Commands
+# Command Line Usage
 
-## List assets
+## Assets
+
+### List assets
 
 ```bash
-./bin/redfish-inventory assets list
+redfish-inventory assets list
 ```
 
----
-
-## Show an asset
+### Show an asset
 
 ```bash
-./bin/redfish-inventory assets show 1
+redfish-inventory assets show 5
 ```
 
----
-
-## Create an asset
+### Create an asset
 
 ```bash
-./bin/redfish-inventory assets create-asset \
-    /Users/ab/Downloads/redfish_asset.json \
-    name="Server 1" \
+redfish-inventory assets create system.json \
+    name="Compute Node 01" \
     rackId=1 \
     size=2 \
-    position=4
+    position=10
 ```
 
-During creation the CLI will:
+### Update an asset
 
-1. Validate the supplied JSON file.
-2. Validate the required asset fields.
-3. Parse the uploaded Redfish JSON.
-4. Ask for a JSON search term.
-5. Search recursively through the JSON.
-6. Display matching JSON paths.
-7. Allow one or more paths to be selected.
-8. Ask for a display name for each selected field.
-9. Allow additional searches if required.
-10. Build the asset payload.
-11. Submit the asset to the backend API.
+```bash
+redfish-inventory assets update 5 \
+    name="Compute Node 02"
+```
 
-Generated payload:
+```bash
+redfish-inventory assets update 5 \
+    rackId=2 \
+    position=12
+```
 
-```json
-{
-  "rackId": 1,
-  "name": "Server 1",
-  "size": 2,
-  "position": 4,
-  "data": [
-    {
-      "name": "Total Memory",
-      "path": "MemorySummary/TotalSystemMemoryGiB"
-    },
-    {
-      "name": "Logical CPUs",
-      "path": "ProcessorSummary/LogicalProcessorCount"
-    }
-  ],
-  "json": {
-    "text": "{ Full Redfish JSON }",
-    "filename": "redfish_asset.json"
-  }
-}
+### Upload a new JSON version
+
+```bash
+redfish-inventory assets update-json 5 system.json
+```
+
+### View a previous version
+
+```bash
+redfish-inventory assets show-version 5 0
+```
+
+### Add tracked data
+
+```bash
+redfish-inventory assets add-data 5
+```
+
+Search for Redfish fields and choose which ones to track.
+
+### Delete tracked data
+
+```bash
+redfish-inventory assets delete-data 5
+```
+
+Displays the tracked fields and allows one to be removed.
+
+### Delete an asset
+
+```bash
+redfish-inventory assets delete 5
 ```
 
 ---
 
-## Update an asset
+## Racks
+
+### List racks
 
 ```bash
-./bin/redfish-inventory assets update-asset \
-    1 \
-    name="Updated Server"
+redfish-inventory racks list
 ```
 
-Or update multiple fields:
+### Show a rack
 
 ```bash
-./bin/redfish-inventory assets update-asset \
-    1 \
-    name="Updated Server" \
-    position=8
+redfish-inventory racks show 2
 ```
 
----
-
-## Update an asset's Redfish JSON
+### Create a rack
 
 ```bash
-./bin/redfish-inventory assets update-json \
-    1 \
-    /Users/ab/Downloads/new_redfish.json
-```
-
----
-
-## Delete an asset
-
-```bash
-./bin/redfish-inventory assets delete-asset 1
-```
-
----
-
-## Show a previous asset version
-
-```bash
-./bin/redfish-inventory assets show-version 1 0
-```
-
-Version indexing starts at **0**.
-
----
-
-# Rack Commands
-
-## List racks
-
-```bash
-./bin/redfish-inventory racks list
-```
-
----
-
-## Show a rack
-
-```bash
-./bin/redfish-inventory racks show 1
-```
-
----
-
-## Create a rack
-
-```bash
-./bin/redfish-inventory racks create-rack \
-    name="Rack A" \
-    size=42
-```
-
-Notes are optional:
-
-```bash
-./bin/redfish-inventory racks create-rack \
+redfish-inventory racks create \
     name="Rack A" \
     size=42 \
     notes="GPU Rack"
 ```
 
----
-
-## Update a rack
+### Update a rack
 
 ```bash
-./bin/redfish-inventory racks update-rack \
-    1 \
+redfish-inventory racks update 2 \
     name="Rack B"
 ```
 
-Or:
+### Delete a rack
 
 ```bash
-./bin/redfish-inventory racks update-rack \
-    1 \
-    name="Rack B" \
-    size=48
+redfish-inventory racks delete 2
 ```
 
----
-
-## List assets within a rack
+### List assets within a rack
 
 ```bash
-./bin/redfish-inventory racks list-assets 1
+redfish-inventory racks list-assets 2
 ```
 
 ---
 
-## Delete a rack
+# Tracked Data
 
-```bash
-./bin/redfish-inventory racks delete-rack 1
-```
+Tracked data allows important Redfish values to be monitored without viewing the full JSON document.
 
----
+Examples include:
 
-# API Client
+- Total Memory
+- BIOS Version
+- Model
+- Serial Number
+- Logical CPU Count
 
-All communication with the backend is handled through a shared `ApiClient`.
-
-Supported HTTP methods:
-
-- GET
-- POST
-- PATCH
-- DELETE
-
-Commands are responsible only for:
-
-- Parsing command-line arguments
-- Building request payloads
-- Displaying responses
-
-The `ApiClient` is responsible for:
-
-- Making HTTP requests
-- Parsing JSON responses
-- Raising API errors when requests fail
+Tracked fields are linked to JSON paths and are automatically updated whenever a new JSON version is uploaded.
 
 ---
 
-# Production Architecture
+# JSON Version History
 
-The CLI communicates exclusively with the backend REST API.
+Each uploaded JSON file is stored as a new version.
 
-It never communicates directly with MongoDB or any other database.
+You can:
 
-Typical flow:
-
-```text
-CLI
- │
- ▼
-ApiClient
- │
- ▼
-REST API
- │
- ▼
-Backend
- │
- ▼
-Database
-```
+- Browse previous versions
+- Compare tracked values between versions
+- View the original JSON for any version
 
 ---
 
-# Asset Creation Workflow
+# Technologies
 
-```text
-Run create-asset command
-        │
-        ▼
-Validate command arguments
-        │
-        ▼
-Read Redfish JSON file
-        │
-        ▼
-Parse JSON
-        │
-        ▼
-Ask user for search term
-        │
-        ▼
-Search JSON recursively
-        │
-        ▼
-Display matching JSON paths
-        │
-        ▼
-User selects one or more fields
-        │
-        ▼
-User enters display names
-        │
-        ▼
-Search again?
-      ┌──────────────┐
-      │     Yes      │
-      └──────┬───────┘
-             │
-             ▼
-     Search JSON again
-             │
-             ▼
-            No
-             │
-             ▼
-Generate asset payload
-             │
-             ▼
-POST asset to backend API
-             │
-             ▼
-Asset created
-```
+- Ruby
+- dry-cli
+- tty-prompt
+- Net::HTTP
+- JSON
+- Redfish API
+
