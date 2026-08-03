@@ -188,28 +188,6 @@ module RedfishInventory
 
         # Production:
         ApiClient.delete("/assets/#{id}")
-
-        # Demo only — remove this section for production
-        # assets_file = File.expand_path('../../../data/assets.json', __dir__)
-        # assets = JSON.parse(File.read(assets_file))
-
-        # asset = assets.find do |asset|
-        #   asset['id'] == id.to_i
-        # end
-
-        # unless asset
-        #   puts "Asset #{id} not found"
-        #   return
-        # end
-
-        # assets.delete(asset)
-
-        # File.write(
-        #   assets_file,
-        #   JSON.pretty_generate(assets)
-        # )
-        # End demo-only section
-
         puts "Asset #{id} deleted"
       end
 

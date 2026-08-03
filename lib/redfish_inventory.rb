@@ -26,7 +26,6 @@ require_relative 'redfish_inventory/dry_cli/racks/delete'
 require_relative 'redfish_inventory/dry_cli/racks/list_assets'
 
 require_relative 'redfish_inventory/dry_cli/interactive'
-
 require_relative 'redfish_inventory/dry_cli/registry'
 
 module RedfishInventory
