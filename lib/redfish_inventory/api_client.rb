@@ -4,15 +4,12 @@ require "uri"
 
 module RedfishInventory
   class ApiClient
+    
     def self.get(path)
       uri = URI("#{Config::API_URL}#{path}")
       response = Net::HTTP.get_response(uri)
 
-      unless response.is_a?(Net::HTTPSuccess)
-        raise "API request failed: #{response.code} #{response.message}"
-      end
-
-      JSON.parse(response.body)
+      handle_response(response)
     end
 
     def self.post(path, payload)
@@ -68,5 +65,28 @@ module RedfishInventory
 
       JSON.parse(response.body)
     end
+
+    def self.handle_response(response)
+      if response.is_a?(Net::HTTPSuccess)
+        return if response.body.nil? || response.body.empty?
+
+        return JSON.parse(response.body)
+      end
+
+      body =
+        begin
+          JSON.parse(response.body)
+        rescue JSON::ParserError
+          {}
+        end
+
+      raise ApiError.new(
+        status: response.code.to_i,
+        error_code: body['error'],
+        message: body['message'] || "#{response.code} #{response.message}",
+        details: body['details']
+      )
+    end
+
   end
 end

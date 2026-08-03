@@ -5,26 +5,6 @@ require 'json'
 module RedfishInventory
   module Commands
     class Assets
-      def self.run(action, arguments)
-        case action
-        when 'list'
-          list
-        when 'show'
-          show(arguments[0])
-        when 'update-json'
-          update_json(arguments[0], arguments[1])
-        when 'update-asset'
-          update_asset(arguments[0], arguments.drop(1))
-        when 'delete-asset'
-          delete(arguments[0])
-        when 'create-asset'
-          create(arguments[0], arguments.drop(1))
-        when 'show-version'
-          show_version(arguments[0], arguments[1])
-        else
-          puts "Unknown assets action: #{action}"
-        end
-      end
 
       def self.print_asset_summary(asset)
         puts ""
@@ -61,36 +41,49 @@ module RedfishInventory
 
       # Methods for what the API allows below 
       def self.list
-        assets = ApiClient.get("/assets")
+        assets = ApiClient.get('/assets')
+
+        if assets.empty?
+          puts 'No assets found'
+          return
+        end
 
         assets.each do |asset|
           print_asset_summary(asset)
         end
 
-        print "\nWould you like to see JSON? (y/n):"
-        answer = $stdin.gets&.chomp&.downcase 
+        print "\nWould you like to see JSON? (y/n): "
+        answer = $stdin.gets&.chomp&.downcase
         return unless answer == 'y'
 
-        print "Enter asset ID's separated by commas:"
+        print "Enter asset IDs separated by commas: "
         input = $stdin.gets&.chomp
 
-        selected_ids =  input
-                        .to_s
-                        .split(',')
-                        .map(&:strip)
-                        .reject(&:empty?)
-                        .map(&:to_i)
-                        .uniq
-        selected_ids.each do |id|
-          asset = assets.find { |item| item['id'] == id}
+        selected_ids = input
+                      .to_s
+                      .split(',')
+                      .map(&:strip)
+                      .reject(&:empty?)
+                      .map(&:to_i)
+                      .uniq
 
-          unless asset 
+        selected_ids.each do |id|
+          asset = assets.find { |item| item['id'] == id }
+
+          unless asset
             puts "Asset #{id} not found"
             next
           end
-          puts 
+          puts
           puts "JSON for asset #{id}:"
-          puts JSON.pretty_generate(JSON.parse(asset.dig('json', 'text')))
+
+          json_text = asset.dig('json', 'text')
+
+          begin
+            puts JSON.pretty_generate(JSON.parse(json_text))
+          rescue JSON::ParserError
+            puts "Asset #{id} contains invalid JSON"
+          end
         end
       end
 
@@ -186,29 +179,8 @@ module RedfishInventory
           return
         end
 
-        # Production:
         ApiClient.delete("/assets/#{id}")
         puts "Asset #{id} deleted"
-      end
-
-      def self.show_version(id, index)
-        if id.nil? || index.nil?
-          puts 'Usage: assets show-version <id> <index>'
-          return
-        end
-
-        asset = ApiClient.get("/assets/#{id}/#{index}")
-
-        puts "Asset #{id}, version #{index}"
-        print_asset_summary(asset)
-
-        json_text = asset.dig('json', 'text')
-
-        unless json_text.nil? || json_text.empty?
-          puts
-          puts 'JSON:'
-          puts JSON.pretty_generate(JSON.parse(json_text))
-        end
       end
 
       def self.create(file_path, arguments)
@@ -406,10 +378,6 @@ module RedfishInventory
         end
 
         matches
-      end
-
-      def self.select_data_fields(_parsed_json)
-        []
       end
 
       def self.show_version(id, index)

@@ -1,8 +1,14 @@
+require_relative 'redfish_inventory/errors'
 require_relative 'redfish_inventory/config'
 require_relative 'redfish_inventory/api_client'
 
 require_relative 'redfish_inventory/commands/assets'
 require_relative 'redfish_inventory/commands/racks'
+
+require_relative 'redfish_inventory/commands/stats'
+require_relative 'redfish_inventory/dry_cli/stats/stats'
+require_relative 'redfish_inventory/dry_cli/stats/racks'
+require_relative 'redfish_inventory/dry_cli/stats/assets'
 
 require_relative 'redfish_inventory/interactive/theme'
 require_relative 'redfish_inventory/interactive/main_menu'
@@ -33,5 +39,31 @@ require_relative 'redfish_inventory/dry_cli/registry'
 module RedfishInventory
   def self.start(arguments)
     Dry::CLI.new(DryCLI::Registry).call(arguments: arguments)
+  rescue ApiError => error
+    case error.status
+    when 401
+      warn 'You are not logged in, or your session has expired'
+    when 403
+      warn 'You do not have permission to perform this action'
+    else
+      warn "API error: #{error.message}"
+
+      Array(error.details).each do |detail|
+        path = Array(detail['path']).join('.')
+        warn "  #{path}: #{detail['message']}"
+      end
+    end
+  rescue Errno::ECONNREFUSED
+    warn "Could not connect to the API at #{Config::API_URL}"
+  rescue SocketError
+    warn "Could not resolve the API address: #{Config::API_URL}"
+  rescue Net::OpenTimeout, Net::ReadTimeout
+    warn 'The API request timed out'
+  rescue URI::InvalidURIError
+    warn "The API URL is invalid: #{Config::API_URL}"
+  rescue OpenSSL::SSL::SSLError
+    warn 'Could not establish a secure connection to the API'
+  rescue JSON::ParserError => error
+    warn "The API returned invalid JSON: #{error.message}"
   end
 end
