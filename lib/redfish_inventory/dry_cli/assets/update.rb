@@ -13,7 +13,7 @@ module RedfishInventory
                  desc: 'Asset ID'
 
         option :name,
-               desc: 'New asset name'
+               desc: 'New asset name, use quotes if it contains spaces'
 
         option :rack_id,
                type: :integer,

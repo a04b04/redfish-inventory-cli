@@ -10,7 +10,7 @@ module RedfishInventory
 
         option :name,
                required: true,
-               desc: 'Rack name'
+               desc: 'Rack name, use quotes if it contains spaces'
 
         option :size,
                required: true,
@@ -18,7 +18,7 @@ module RedfishInventory
                desc: 'Rack size'
 
         option :notes,
-               desc: 'Optional rack notes'
+               desc: 'Optional rack notes, use quotes if it contains spaces'
 
         def call(name:, size:, notes: '', **)
           arguments = [
