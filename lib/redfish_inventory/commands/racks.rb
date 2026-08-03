@@ -28,11 +28,6 @@ module RedfishInventory
         # Production:
         racks = ApiClient.get("/racks")
         puts JSON.pretty_generate(racks)
-
-        # demo code
-      #  file_path = File.expand_path('../../../data/racks.json', __dir__)
-      #  racks = JSON.parse(File.read(file_path))
-        # remove above
       end
 
 
@@ -57,27 +52,6 @@ module RedfishInventory
         payload['size'] = payload['size'].to_i
         rack = ApiClient.post("/racks", payload)
         puts JSON.pretty_generate(rack)
-
-        # Demo only remove this section
-        # racks_file = File.expand_path('../../../data/racks.json', __dir__)
-        # racks = JSON.parse(File.read(racks_file))
-        # next_id = racks.empty? ? 1 : racks.map { |rack| rack['id'] }.max + 1
-
-        # rack = {
-        #   'id' => next_id,
-        #   'name' => payload['name'],
-        #   'size' => payload['size'].to_i,
-        #   'notes' => payload['notes']
-        # }
-
-        # racks << rack
-        # File.write(
-        #   racks_file,
-        #   JSON.pretty_generate(racks)
-        # )
-        # puts JSON.pretty_generate(rack)
-
-        # End demo-only section
       end
 
       def self.show(id)
@@ -88,22 +62,6 @@ module RedfishInventory
         # Production:
         rack = ApiClient.get("/racks/#{id}")
         puts JSON.pretty_generate(rack)
-
-        # Demo only — remove for production
-        # file_path = File.expand_path('../../../data/racks.json', __dir__)
-        # racks = JSON.parse(File.read(file_path))
-
-        # rack = racks.find do |rack|
-        #   rack['id'] == id.to_i
-        # end
-
-        # unless rack
-        #   puts "Rack #{id} not found"
-        #   return
-        # end
-
-        # puts JSON.pretty_generate(rack)
-        # End demo-only section
       end
 
       def self.update_rack(id, updates)
@@ -127,29 +85,6 @@ module RedfishInventory
 
         # Production:
         ApiClient.patch("/racks/#{id}", payload)
-
-        # Demo Only
-        # racks_file = File.expand_path('../../../data/racks.json', __dir__)
-
-        # racks = JSON.parse(File.read(racks_file))
-        # rack = racks.find do |rack|
-        #   rack['id'] == id.to_i
-        # end
-        # unless rack
-        #   puts "Rack #{id} not found"
-        #   return
-        # end
-
-        # payload.each do |field, value|
-        #   rack[field] = value
-        # end
-
-        # File.write(
-        #   racks_file,
-        #   JSON.pretty_generate(racks)
-        # )
-
-        # End demo-only section
         puts "Rack #{id} updated"
         puts JSON.pretty_generate(payload)
       end
@@ -162,53 +97,31 @@ module RedfishInventory
 
         # Production:
         ApiClient.delete("/racks/#{id}")
-
-        # Demo only — remove this section for production
-        # racks_file = File.expand_path('../../../data/racks.json', __dir__)
-        # racks = JSON.parse(File.read(racks_file))
-
-        # rack = racks.find do |rack|
-        #   rack['id'] == id.to_i
-        # end
-
-        # unless rack
-        #   puts "Rack #{id} not found"
-        #   return
-        # end
-
-        # racks.delete(rack)
-
-        # File.write(
-        #   racks_file,
-        #   JSON.pretty_generate(racks)
-        # )
-        # End demo-only section
-
         puts "Rack #{id} deleted"
       end
 
-      def self.list_assets(id)
-        if id.nil?
-          puts 'Usage: racks list-assets <id>'
+      def self.list_assets(rack_id)
+        if rack_id.nil?
+          puts 'Usage: racks list-assets <rack-id>'
           return
         end
-        # Production:
-        assets = ApiClient.get("/racks/#{id}/assets")
-        puts JSON.pretty_generate(assets)
-        
-        # Demo only below
-        # assets_file = File.expand_path('../../../data/assets.json', __dir__)
 
-        # assets = JSON.parse(File.read(assets_file))
+        assets = fetch_assets(rack_id)
 
-        # rack_assets = assets.select do |asset|
-        #   asset['rackId'] == id.to_i
-        # end
+        if assets.empty?
+          puts "No assets found in rack #{rack_id}"
+          return
+        end
 
-        # puts JSON.pretty_generate(rack_assets)
-
-        # End demo-only section
+        assets.each do |asset|
+          Commands::Assets.print_asset_summary(asset)
+        end
       end
+
+      def self.fetch_assets(rack_id)
+        ApiClient.get("/racks/#{rack_id}/assets")
+      end
+      
     end
   end
 end
