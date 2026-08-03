@@ -5,27 +5,8 @@ require 'json'
 module RedfishInventory
   module Commands
     class Racks
-      def self.run(action, arguments)
-        case action
-        when 'list'
-          list
-        when 'show'
-          show(arguments[0])
-        when 'update-rack'
-          update_rack(arguments[0], arguments.drop(1))
-        when 'delete-rack'
-          delete(arguments[0])
-        when 'list-assets'
-          list_assets(arguments[0])
-        when 'create-rack'
-          create(arguments)
-
-        else puts "Unknown racks action: #{action}"
-        end
-      end
 
       def self.list
-        # Production:
         racks = ApiClient.get("/racks")
         puts JSON.pretty_generate(racks)
       end
@@ -44,11 +25,10 @@ module RedfishInventory
         end
 
         if payload['name'].empty? || payload['size'].empty?
-          puts 'Usage: racks create-rack name="Rack A" size=42 notes=Optional notes" '
+          puts 'Usage: racks create --name="Rack A" --size=42 --notes="Optional notes"'
           return
         end
 
-        # Production
         payload['size'] = payload['size'].to_i
         rack = ApiClient.post("/racks", payload)
         puts JSON.pretty_generate(rack)
@@ -59,7 +39,6 @@ module RedfishInventory
           puts 'Usage: racks show <id>'
           return
         end
-        # Production:
         rack = ApiClient.get("/racks/#{id}")
         puts JSON.pretty_generate(rack)
       end
@@ -83,7 +62,6 @@ module RedfishInventory
           payload[field] = value
         end
 
-        # Production:
         ApiClient.patch("/racks/#{id}", payload)
         puts "Rack #{id} updated"
         puts JSON.pretty_generate(payload)
@@ -95,7 +73,6 @@ module RedfishInventory
           return
         end
 
-        # Production:
         ApiClient.delete("/racks/#{id}")
         puts "Rack #{id} deleted"
       end

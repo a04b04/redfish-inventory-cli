@@ -25,6 +25,10 @@ module RedfishInventory
       register 'racks list-assets', Racks::ListAssets
 
       register 'interactive', Interactive, aliases: ['i']
+
+      register 'stats', Stats::Stats
+      register 'stats racks', Stats::Racks
+      register 'stats assets', Stats::Assets
     end
   end
 end
