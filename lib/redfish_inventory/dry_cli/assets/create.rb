@@ -14,7 +14,7 @@ module RedfishInventory
 
         option :name,
                required: true,
-               desc: 'Asset name'
+               desc: 'Asset name, use quotes if it contains spaces'
 
         option :rack_id,
                required: true,
