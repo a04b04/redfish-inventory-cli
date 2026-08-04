@@ -6,9 +6,14 @@ module RedfishInventory
   class ApiClient
     
     def self.get(path)
-      uri = URI("#{Config::API_URL}#{path}")
-      response = Net::HTTP.get_response(uri)
+      uri = URI("#{RedfishInventory::Config::API_URL}#{path}")
 
+      request = Net::HTTP::Get.new(uri)
+      add_auth_header(request)
+
+      response = Net::HTTP.start(uri.hostname, uri.port) do |http|
+        http.request(request)
+      end
       handle_response(response)
     end
 
@@ -17,17 +22,14 @@ module RedfishInventory
 
       request = Net::HTTP::Post.new(uri)
       request['Content-Type'] = 'application/json'
+      add_auth_header(request)
       request.body = JSON.generate(payload)
 
       response = Net::HTTP.start(uri.hostname, uri.port) do |http|
         http.request(request)
       end
 
-      unless response.is_a?(Net::HTTPSuccess)
-        raise "API request failed: #{response.code} #{response.message} - #{response.body}"
-      end
-
-      JSON.parse(response.body)
+      handle_response(response)
     end
 
     def self.patch(path, payload)
@@ -35,35 +37,26 @@ module RedfishInventory
 
       request = Net::HTTP::Patch.new(uri)
       request['Content-Type'] = 'application/json'
+      add_auth_header(request)
       request.body = JSON.generate(payload)
 
       response = Net::HTTP.start(uri.hostname, uri.port) do |http|
         http.request(request)
       end
 
-      unless response.is_a?(Net::HTTPSuccess)
-        raise "API request failed: #{response.code} #{response.message} - #{response.body}"
-      end
-
-      JSON.parse(response.body)
+      handle_response(response)
     end
 
     def self.delete(path)
       uri = URI("#{RedfishInventory::Config::API_URL}#{path}")
-
       request = Net::HTTP::Delete.new(uri)
+      add_auth_header(request)
 
       response = Net::HTTP.start(uri.hostname, uri.port) do |http|
         http.request(request)
       end
 
-      unless response.is_a?(Net::HTTPSuccess)
-        raise "API request failed: #{response.code} #{response.message} - #{response.body}"
-      end
-
-      return if response.body.nil? || response.body.empty?
-
-      JSON.parse(response.body)
+      handle_response(response)
     end
 
     def self.handle_response(response)
@@ -87,6 +80,32 @@ module RedfishInventory
         details: body['details']
       )
     end
+
+    def self.login(username, password)
+      uri = URI("#{Config::API_URL}/users/login")
+      request = Net::HTTP::Post.new(uri)
+
+      request['Content-Type'] = 'application/json'
+      request.body = JSON.generate(
+        {
+          'username' => username,
+          'password' => password
+        }
+      )
+      response = Net::HTTP.start(uri.hostname, uri.port) do |http|
+        http.request(request)
+      end
+
+      handle_response(response)
+    end
+
+    def self.add_auth_header(request)
+      token = Auth::TokenStore.load
+      return if token.nil? || token.empty?
+      request['Authorization'] = "Bearer #{token}" if token
+    end
+
+
 
   end
 end

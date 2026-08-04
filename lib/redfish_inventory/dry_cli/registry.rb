@@ -26,9 +26,20 @@ module RedfishInventory
 
       register 'interactive', Interactive, aliases: ['i']
 
+      register 'templates list', Templates::List
+      register 'templates show', Templates::Show
+      register 'templates create', Templates::Create
+      register 'templates delete', Templates::Delete
+      register 'templates update-name', Templates::Update
+      register 'templates add-path', Templates::AddPath
+      register 'templates update-path', Templates::UpdatePath
+
       register 'stats', Stats::Stats
       register 'stats racks', Stats::Racks
       register 'stats assets', Stats::Assets
+
+      register 'login', Auth::Login
+      
     end
   end
 end

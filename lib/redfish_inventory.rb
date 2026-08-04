@@ -1,3 +1,7 @@
+
+require_relative 'redfish_inventory/dry_cli/auth/login'
+require_relative 'redfish_inventory/auth/token_store'
+
 require_relative 'redfish_inventory/errors'
 require_relative 'redfish_inventory/config'
 require_relative 'redfish_inventory/api_client'
@@ -34,6 +38,16 @@ require_relative 'redfish_inventory/dry_cli/racks/delete'
 require_relative 'redfish_inventory/dry_cli/racks/list_assets'
 
 require_relative 'redfish_inventory/dry_cli/interactive'
+
+require_relative 'redfish_inventory/commands/templates'
+require_relative 'redfish_inventory/dry_cli/templates/list'
+require_relative 'redfish_inventory/dry_cli/templates/show'
+require_relative 'redfish_inventory/dry_cli/templates/create'
+require_relative 'redfish_inventory/dry_cli/templates/delete'
+require_relative 'redfish_inventory/dry_cli/templates/update_name'
+require_relative 'redfish_inventory/dry_cli/templates/add_path'
+require_relative 'redfish_inventory/dry_cli/templates/update_path'
+
 require_relative 'redfish_inventory/dry_cli/registry'
 
 module RedfishInventory
