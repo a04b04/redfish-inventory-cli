@@ -6,7 +6,7 @@ module RedfishInventory
       def initialize
         @prompt = TTY::Prompt.new(
           symbols: {
-            marker: '❯'
+            marker: '>'
           },
           active_color: :green
         )

@@ -10,6 +10,10 @@ module RedfishInventory
             AssetsMenu.new.select
           when :racks
             RacksMenu.new.select
+          when :templates
+            TemplatesMenu.new.select
+          when :stats
+            StatsMenu.new.select
           when :exit
             break
           end
