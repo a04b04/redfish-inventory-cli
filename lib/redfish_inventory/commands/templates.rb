@@ -23,16 +23,15 @@ module RedfishInventory
         print_template_summary(template)
       end
 
-      def self.create(name)
-        template = ApiClient.post(
-          '/templates',
-          {
-            'name' => name
-          }
-        )
+      def self.create(name, paths = [])
+        payload = {
+          'name' => name,
+          'paths' => paths
+        }
+
+        template = ApiClient.post('/templates', payload)
 
         puts "Template '#{template['name']}' created"
-
         template
       end
 
@@ -70,33 +69,23 @@ module RedfishInventory
       end
 
       def self.add_path(id, name, path)
-        existing_paths = ApiClient.get("/templates/#{id}/paths")
-
-        puts 
-        puts "Current paths for template #{id}:"
-
-        if existing_paths.empty?
-          puts "No paths found for template #{id}"
-        else
-          existing_paths.each_with_index do |existing_path, index|
-            puts "#{index + 1}. #{existing_path['name']}: #{existing_path['path']}"
-          end
-        end
-
-        puts
-
         payload = {
-          'name' => name,
-          'path' => path
+          'paths' => [
+            {
+              'name' => name,
+              'path' => path
+            }
+          ]
         }
 
-        template_path = ApiClient.post(
+        created_paths = ApiClient.post(
           "/templates/#{id}/paths",
           payload
         )
 
-        puts "Path added to template #{id}"
-        puts JSON.pretty_generate(template_path)
+        puts "Path '#{name}' added to template #{id}"
+
+        created_paths
       end
 
 
