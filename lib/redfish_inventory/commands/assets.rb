@@ -24,18 +24,6 @@ module RedfishInventory
           end
         end
         puts '-' * 40
-
-
-      end
-
-      def self.value_at_path(json, path)
-        path.split('/').reduce(json) do |current, part|
-          if current.is_a?(Array)
-            current[part.to_i]
-          elsif current.is_a?(Hash)
-            current[part]
-          end
-        end
       end
 
 
@@ -232,7 +220,10 @@ module RedfishInventory
             next
           end
 
-          matches = find_matching_paths(parsed_json, search_term)
+          matches = JsonFieldSelector.find_matching_paths(
+            parsed_json,
+            search_term
+          )
 
           if matches.empty?
             puts 'No matching JSON fields found'
@@ -314,7 +305,7 @@ module RedfishInventory
           'name' => fields['name'],
           'size' => fields['size'].to_i,
           'position' => fields['position'].to_i,
-          'data' => data_fields,
+          'paths' => data_fields,
           'json' => {
             'text' => json_text,
             'filename' => File.basename(file_path)
@@ -338,46 +329,6 @@ module RedfishInventory
             }
           }
         )
-      end
-
-      def self.find_matching_paths(data, search_term, base_path = '')
-        matches = []
-
-        return matches if search_term.nil? || search_term.empty? || data.nil?
-
-        if data.is_a?(Array)
-
-          data.each_with_index do |item, index|
-            path = base_path.empty? ? index.to_s : "#{base_path}/#{index}"
-
-            matches.concat(
-              find_matching_paths(item, search_term, path)
-            )
-          end
-
-          return matches
-        end
-
-        return matches unless data.is_a?(Hash)
-
-        data.each do |key, value|
-          path = base_path.empty? ? key : "#{base_path}/#{key}"
-
-          if key.downcase.include?(search_term.downcase)
-
-            matches << {
-              'path' => path,
-              'value' => value
-            }
-
-          end
-
-          matches.concat(
-            find_matching_paths(value, search_term, path)
-          )
-        end
-
-        matches
       end
 
       def self.show_version(id, index)
@@ -420,7 +371,14 @@ module RedfishInventory
 
         asset = ApiClient.get("/assets/#{asset_id}")
         json_text = asset.dig('json', 'text')
+
+        if json_text.nil? || json_text.empty?
+          puts "Asset #{asset_id} has no stored JSON"
+          return
+        end
+
         parsed_json = JSON.parse(json_text)
+        selected_fields = []
 
         loop do
           print 'Search JSON fields: '
@@ -431,7 +389,10 @@ module RedfishInventory
             next
           end
 
-          matches = find_matching_paths(parsed_json, search_term)
+          matches = JsonFieldSelector.find_matching_paths(
+            parsed_json,
+            search_term
+          )
 
           if matches.empty?
             puts 'No matching JSON fields found'
@@ -477,22 +438,12 @@ module RedfishInventory
             print '> '
 
             field_name = $stdin.gets&.chomp
+            field_name = selected_match['path'].split('/').last if field_name.nil? || field_name.empty?
 
-            if field_name.nil? || field_name.empty?
-              field_name = selected_match['path'].split('/').last
-            end
-
-            payload = {
+            selected_fields << {
               'name' => field_name,
               'path' => selected_match['path']
             }
-
-            added_data = ApiClient.post(
-              "/assets/#{asset_id}/paths",
-              payload
-            )
-
-            puts "Added #{added_data['name'] || field_name}"
           end
 
           puts
@@ -501,11 +452,21 @@ module RedfishInventory
           print 'Select an option: '
 
           next_action = $stdin.gets&.chomp
-
           break if next_action == '2'
         end
 
-        puts "Data added to asset #{asset_id}"
+        selected_fields = selected_fields.uniq { |field| field['path'] }
+
+        payload = {
+          'paths' => selected_fields
+        }
+
+        added_data = ApiClient.post(
+          "/assets/#{asset_id}/paths",
+          payload
+        )
+
+        puts "Added #{added_data.length} data fields to asset #{asset_id}"
       end
 
       def self.delete_data(asset_id)
