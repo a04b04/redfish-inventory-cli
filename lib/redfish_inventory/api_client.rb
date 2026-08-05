@@ -98,14 +98,13 @@ module RedfishInventory
 
       handle_response(response)
     end
+    
 
     def self.add_auth_header(request)
       token = Auth::TokenStore.load
       return if token.nil? || token.empty?
       request['Authorization'] = "Bearer #{token}" if token
     end
-
-
 
   end
 end

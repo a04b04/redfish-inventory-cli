@@ -28,7 +28,7 @@ module RedfishInventory
           end
 
           response = ApiClient.login(username, password)
-          token = response['token']
+          token = response.dig('token', 'token')
 
           if token.nil? || token.empty?
             puts 'Login failed: the API did not return a token'
