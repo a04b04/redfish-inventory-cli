@@ -1,6 +1,14 @@
+# frozen_string_literal: true
 
 require_relative 'redfish_inventory/dry_cli/auth/login'
 require_relative 'redfish_inventory/auth/token_store'
+require_relative 'redfish_inventory/dry_cli/auth/remove_token'
+
+require_relative 'redfish_inventory/auth/token_store'
+require_relative 'redfish_inventory/dry_cli/auth/session_manager'
+
+
+require_relative 'redfish_inventory/json_field_selector'
 
 require_relative 'redfish_inventory/errors'
 require_relative 'redfish_inventory/config'
@@ -18,6 +26,8 @@ require_relative 'redfish_inventory/interactive/theme'
 require_relative 'redfish_inventory/interactive/main_menu'
 require_relative 'redfish_inventory/interactive/assets_menu'
 require_relative 'redfish_inventory/interactive/racks_menu'
+require_relative 'redfish_inventory/interactive/templates_menu'
+require_relative 'redfish_inventory/interactive/stats_menu'
 require_relative 'redfish_inventory/interactive/app'
 
 require_relative 'redfish_inventory/dry_cli/assets/list'
@@ -56,7 +66,8 @@ module RedfishInventory
   rescue ApiError => error
     case error.status
     when 401
-      warn 'You are not logged in, or your session has expired'
+      Auth::TokenStore.delete
+      warn 'Your session has expired. Please log in again'
     when 403
       warn 'You do not have permission to perform this action'
     else

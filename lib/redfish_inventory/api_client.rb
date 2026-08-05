@@ -99,13 +99,33 @@ module RedfishInventory
       handle_response(response)
     end
 
+
     def self.add_auth_header(request)
-      token = Auth::TokenStore.load
+      token = Auth::SessionManager.access_token
       return if token.nil? || token.empty?
-      request['Authorization'] = "Bearer #{token}" if token
+      request['Authorization'] = "Bearer #{token}" 
     end
 
+    def self.refresh_session
+      refresh_token = Auth::TokenStore.refresh_token
 
+      uri = URI("#{Config::API_URL}/users/refresh")
+
+      request = Net::HTTP::Post.new(uri)
+      request['Content-Type'] = 'application/json'
+      request.body = JSON.generate(
+        {
+          'token' => refresh_token
+        }
+      )
+      response = Net::HTTP.start(uri.hostname, uri.port) do |http|
+        http.request(request)
+      end
+
+      session = handle_response(response)
+      Auth::TokenStore.save_session(session)
+      session
+    end
 
   end
 end

@@ -39,7 +39,8 @@ module RedfishInventory
       register 'stats assets', Stats::Assets
 
       register 'login', Auth::Login
-      
+      register 'remove-token', Auth::RemoveToken
+
     end
   end
 end

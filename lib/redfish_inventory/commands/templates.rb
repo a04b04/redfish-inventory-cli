@@ -23,57 +23,16 @@ module RedfishInventory
         print_template_summary(template)
       end
 
-      def self.create(name)
-        template = ApiClient.post(
-          '/templates',
-          {
-            'name' => name
-          }
-        )
+      def self.create(name, paths = [])
+        payload = {
+          'name' => name,
+          'paths' => paths
+        }
 
-        template_id = template['id']
+        template = ApiClient.post('/templates', payload)
 
         puts "Template '#{template['name']}' created"
-        puts
-
-        loop do
-          print 'Path name: '
-          path_name = $stdin.gets&.chomp
-
-          if path_name.nil? || path_name.empty?
-            puts 'Please enter a path name'
-            next
-          end
-
-          print 'JSON path: '
-          path = $stdin.gets&.chomp
-
-          if path.nil? || path.empty?
-            puts 'Please enter a JSON path'
-            next
-          end
-
-          ApiClient.post(
-            "/templates/#{template_id}/paths",
-            {
-              'name' => path_name,
-              'path' => path
-            }
-          )
-
-          puts "Added '#{path_name}'"
-          puts
-          puts '1. Add another path'
-          puts '2. Finish'
-          print 'Select an option: '
-
-          choice = $stdin.gets&.chomp
-
-          break if choice == '2'
-        end
-
-        puts
-        puts "Template '#{template['name']}' is ready"
+        template
       end
 
       # Updating a template name by ID
@@ -110,40 +69,23 @@ module RedfishInventory
       end
 
       def self.add_path(id, name, path)
-        existing_paths = ApiClient.get("/templates/#{id}/paths")
-
-        puts 
-        puts "Current paths for template #{id}:"
-
-        if existing_paths.empty?
-          puts "No paths found for template #{id}"
-        else
-          existing_paths.each_with_index do |existing_path, index|
-            puts "#{index + 1}. #{existing_path['name']}: #{existing_path['path']}"
-          end
-        end
-
-        puts
-        print "Add '#{name}' to this template? (y/n): "
-        confirmation = $stdin.gets&.chomp&.downcase
-        
-        unless confirmation == 'y'
-          puts 'Path creation cancelled'
-          return
-        end
-
         payload = {
-          'name' => name,
-          'path' => path
+          'paths' => [
+            {
+              'name' => name,
+              'path' => path
+            }
+          ]
         }
 
-        template_path = ApiClient.post(
+        created_paths = ApiClient.post(
           "/templates/#{id}/paths",
           payload
         )
 
-        puts "Path added to template #{id}"
-        puts JSON.pretty_generate(template_path)
+        puts "Path '#{name}' added to template #{id}"
+
+        created_paths
       end
 
 
