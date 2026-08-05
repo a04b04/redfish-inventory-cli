@@ -283,6 +283,148 @@ module RedfishInventory
         end
       end
 
+      def select_template_fields(parsed_json)
+        selected_fields = []
+
+        loop do
+          search_term = @prompt.ask(
+            'Search JSON fields:',
+            required: true
+          )
+
+          matches = JsonFieldSelector.find_matching_paths(
+            parsed_json,
+            search_term
+          )
+
+          if matches.empty?
+            puts Theme.warning('No matching JSON fields found')
+            next
+          end
+
+          matches.each_with_index do |match, index|
+            puts
+            puts "#{index + 1}. #{match['path']} = #{match['value'].inspect}"
+          end
+
+          puts
+          input = @prompt.ask(
+            'Select path numbers separated by commas:',
+            required: true
+          )
+
+          selections = input
+                      .split(',')
+                      .map(&:strip)
+                      .reject(&:empty?)
+                      .map(&:to_i)
+                      .uniq
+
+          invalid_selections = selections.select do |selection|
+            selection < 1 || selection > matches.length
+          end
+
+          if selections.empty?
+            puts Theme.warning('Please select at least one path')
+            next
+          end
+
+          unless invalid_selections.empty?
+            puts Theme.warning(
+              "Invalid selections: #{invalid_selections.join(', ')}"
+            )
+            next
+          end
+
+          selections.each do |selection|
+            selected_match = matches[selection - 1]
+            default_name = selected_match['path'].split('/').last
+
+            field_name = @prompt.ask(
+              "Display name for #{selected_match['path']}:",
+              default: default_name,
+              required: true
+            )
+
+            selected_fields << {
+              'name' => field_name,
+              'path' => selected_match['path']
+            }
+          end
+
+          puts
+          puts 'Selected template paths:'
+
+          selected_fields.each_with_index do |field, index|
+            puts "#{index + 1}. #{field['name']} — #{field['path']}"
+          end
+
+          choice = @prompt.select(
+            'What would you like to do next?',
+            cycle: true
+          ) do |menu|
+            menu.choice 'Search for more fields', :search
+            menu.choice 'Create Template', :finish
+            menu.choice 'Cancel', :cancel
+          end
+
+          case choice
+          when :search
+            next
+          when :finish
+            break
+          when :cancel
+            return []
+          end
+        end
+
+        selected_fields.uniq { |field| field['path'] }
+      end
+
+      def create_template_with_json
+        name = @prompt.ask(
+          'Template name:',
+          required: true
+        )
+
+        file_path = @prompt.ask(
+          'JSON file path:',
+          required: true
+        )
+
+        unless File.file?(file_path)
+          puts Theme.error("File not found: #{file_path}")
+          @prompt.keypress('Press any key to continue...')
+          return
+        end
+
+        begin
+          parsed_json = JSON.parse(File.read(file_path))
+        rescue JSON::ParserError => e
+          puts Theme.error("Invalid JSON file: #{e.message}")
+          @prompt.keypress('Press any key to continue...')
+          return
+        end
+
+        selected_fields = select_template_fields(parsed_json)
+
+        if selected_fields.empty?
+          puts Theme.warning('No Paths were selected')
+          @prompt.keypress('Press any key to continue...')
+          return
+        end
+
+        template = Commands::Templates.create(name, selected_fields)
+
+        puts 
+        puts Theme.success("Template '#{template['name']}' created with paths")
+        @prompt.keypress('Press any key to continue...')
+
+
+
+
+      end
+
 
 
 
