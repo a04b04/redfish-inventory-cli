@@ -4,6 +4,10 @@ require_relative 'redfish_inventory/dry_cli/auth/login'
 require_relative 'redfish_inventory/auth/token_store'
 require_relative 'redfish_inventory/dry_cli/auth/remove_token'
 
+require_relative 'redfish_inventory/auth/token_store'
+require_relative 'redfish_inventory/dry_cli/auth/session_manager'
+
+
 require_relative 'redfish_inventory/json_field_selector'
 
 require_relative 'redfish_inventory/errors'
