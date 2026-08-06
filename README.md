@@ -1,53 +1,67 @@
 # Redfish Inventory CLI
 
-A command-line application for managing Redfish assets, racks, templates, roles and permissions through the Asset Rack API.
+A Ruby command-line application for managing **assets**, **racks**, **templates**, **roles**, and **permissions** through the Asset Rack REST API.
 
-The CLI provides both a traditional command-based interface and an interactive terminal UI built with **TTY::Prompt**.
+The CLI provides both a traditional command-based interface using **Dry::CLI** and an interactive terminal interface built with **TTY::Prompt**.
 
 ---
-
 
 # Features
 
 - 🔐 JWT authentication
+- ⚙️ Configurable API endpoint
 - 🖥 Interactive terminal interface
 - 📦 Asset management
 - 🗄 Rack management
 - 📋 Template management
-- 📊 Statistics
 - 👥 Role management
 - 🔑 Permission browser
+- 📊 Statistics
 - 🎨 Pretty terminal tables using TTY::Table
 
 ---
 
-# Configuration
-
-The CLI needs to know the URL of the Asset Rack API.
-
-Open:
-
-```text
-lib/redfish_inventory/config.rb
----
-
 # Installation
+
+Install dependencies:
 
 ```bash
 bundle install
 ```
 
-Run the CLI with:
+Configure the API endpoint:
+
+```bash
+./bin/redfish-inventory config set-url http://localhost:3000/api/v1
+```
+
+Replace the URL with your Asset Rack API server.
+
+The URL is stored locally, so this only needs to be configured once.
+
+Run the CLI:
 
 ```bash
 ./bin/redfish-inventory
 ```
 
-or
+or launch the interactive interface:
 
 ```bash
 ./bin/redfish-inventory interactive
 ```
+
+---
+
+# Configuration
+
+View the configured API endpoint:
+
+```bash
+./bin/redfish-inventory config set-url http://localhost:3000/api/v1
+```
+
+You can run the command again at any time to point the CLI at another Asset Rack API instance.
 
 ---
 
@@ -64,7 +78,7 @@ You'll be prompted for:
 - Username
 - Password
 
-The CLI stores your JWT securely and automatically includes it with future requests.
+The CLI securely stores your JWT token and automatically includes it with future API requests.
 
 ---
 
@@ -97,7 +111,7 @@ Displays all assets in a formatted table.
 Displays:
 
 - Asset details
-- Associated JSON fields
+- Selected JSON fields
 - Option to display the stored JSON document
 
 ---
@@ -114,11 +128,11 @@ position=4
 
 Features:
 
-- Reads a JSON file
-- Searches JSON fields interactively
-- Allows multiple field selections
-- Maps JSON paths to friendly names
-- Uploads both metadata and original JSON
+- Reads a JSON document
+- Interactive JSON path search
+- Select multiple fields
+- Assign friendly field names
+- Upload original JSON alongside metadata
 
 ---
 
@@ -126,7 +140,7 @@ Features:
 
 ```bash
 ./bin/redfish-inventory assets update <id> \
-name="New Name"
+name="Updated Server"
 ```
 
 Supports updating:
@@ -144,7 +158,7 @@ Supports updating:
 ./bin/redfish-inventory assets update-json <id> file.json
 ```
 
-Uploads a new JSON payload while preserving asset metadata.
+Replaces the stored JSON while preserving asset metadata.
 
 ---
 
@@ -164,7 +178,7 @@ Uploads a new JSON payload while preserving asset metadata.
 
 ---
 
-## Add Asset Data Paths
+## Add Asset Data
 
 ```bash
 ./bin/redfish-inventory assets add-data <id>
@@ -190,7 +204,7 @@ Interactively searches JSON and adds additional tracked fields.
 ./bin/redfish-inventory racks list
 ```
 
-Displays racks using a formatted table.
+Displays racks in a formatted table.
 
 ---
 
@@ -215,7 +229,7 @@ Displays:
 ./bin/redfish-inventory racks create \
 name="Rack A" \
 size=42 \
-notes="GPU rack"
+notes="GPU Rack"
 ```
 
 ---
@@ -276,7 +290,7 @@ Displays template information and associated JSON paths.
 ./bin/redfish-inventory templates create
 ```
 
-Interactive creation of reusable JSON templates.
+Interactive creation of reusable templates.
 
 ---
 
@@ -349,7 +363,7 @@ Displays:
 --permissions=4,7
 ```
 
-Creates a new role with the specified permissions.
+Creates a role with the selected permissions.
 
 ---
 
@@ -360,6 +374,8 @@ Creates a new role with the specified permissions.
 --permissions=4,7
 ```
 
+Adds permissions to an existing role.
+
 ---
 
 ## Remove Permissions
@@ -369,7 +385,9 @@ Creates a new role with the specified permissions.
 --permissions=4,7
 ```
 
-The CLI validates that the selected permissions currently exist on the role before attempting removal.
+Removes permissions from an existing role.
+
+The CLI validates that the selected permissions currently exist before attempting removal.
 
 ---
 
@@ -383,7 +401,7 @@ The CLI validates that the selected permissions currently exist on the role befo
 
 # Permissions
 
-## List Available Permissions
+## List Permissions
 
 ```bash
 ./bin/redfish-inventory permissions list
@@ -427,7 +445,7 @@ Launch the interactive interface:
 ./bin/redfish-inventory interactive
 ```
 
-The interface provides menu-driven navigation for all major features.
+The interactive interface provides menu-driven navigation for the majority of CLI functionality.
 
 ## Assets
 
@@ -438,7 +456,7 @@ The interface provides menu-driven navigation for all major features.
 - Delete Asset
 - Manage Asset Data
 - View JSON
-- Browse History
+- Browse JSON History
 
 ---
 
@@ -448,7 +466,7 @@ The interface provides menu-driven navigation for all major features.
 - Show Rack
 - Create Rack
 - Delete Rack
-- Browse Rack Assets
+- Browse Assets in a Rack
 
 ---
 
@@ -480,9 +498,9 @@ The interface provides menu-driven navigation for all major features.
 
 ## Statistics
 
-- Overall statistics
-- Rack statistics
-- Asset statistics
+- Overall Statistics
+- Rack Statistics
+- Asset Statistics
 
 ---
 
@@ -501,7 +519,7 @@ The interface provides menu-driven navigation for all major features.
 
 The CLI communicates with the Asset Rack REST API using authenticated JSON requests.
 
-Authentication uses JWT Bearer tokens stored locally after login.
+Authentication uses JWT Bearer tokens stored locally after a successful login.
 
 ---
 
@@ -509,12 +527,13 @@ Authentication uses JWT Bearer tokens stored locally after login.
 
 ```
 lib/
+├── auth/
 ├── commands/
 ├── dry_cli/
 ├── interactive/
-├── auth/
 ├── api_client.rb
 ├── config.rb
+├── config_store.rb
+├── errors.rb
 └── json_field_selector.rb
 ```
-
