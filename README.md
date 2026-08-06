@@ -1,68 +1,409 @@
 # Redfish Inventory CLI
 
-A Ruby command-line application for managing server inventory using the Redfish API.
+A command-line application for managing Redfish assets, racks, templates, roles and permissions through the Asset Rack API.
 
-The application supports both a fully interactive terminal interface and a traditional command-line interface powered by `dry-cli`.
+The CLI provides both a traditional command-based interface and an interactive terminal UI built with **TTY::Prompt**.
 
 ---
 
-## Features
+# Features
 
-### Assets
-
-- List all assets
-- View an asset
-- Create an asset from a Redfish JSON file
-- Update asset information
-- Upload a new JSON version
-- Browse previous JSON versions
-- Add tracked data fields
-- Remove tracked data fields
-- Delete assets
-
-### Racks
-
-- List racks
-- View rack information
-- Create racks
-- Update racks
-- Delete racks
-- Browse assets within a rack
-
-### Interactive Mode
-
-- Menu-driven interface
-- Keyboard navigation
-- Asset and rack selection
-- Version browsing
-- JSON viewing
-- Guided asset creation
-- Guided asset updates
+- 🔐 JWT authentication
+- 🖥 Interactive terminal interface
+- 📦 Asset management
+- 🗄 Rack management
+- 📋 Template management
+- 📊 Statistics
+- 👥 Role management
+- 🔑 Permission browser
+- 🎨 Pretty terminal tables using TTY::Table
 
 ---
 
 # Installation
 
 ```bash
-git clone <repository>
-cd redfish-inventory-cli
 bundle install
+```
+
+Run the CLI with:
+
+```bash
+./bin/redfish-inventory
+```
+
+or
+
+```bash
+./bin/redfish-inventory interactive
 ```
 
 ---
 
-# Configuration
+# Authentication
 
-Update the API URL inside:
+## Login
 
+```bash
+./bin/redfish-inventory login
 ```
-lib/redfish_inventory/config.rb
+
+You'll be prompted for:
+
+- Username
+- Password
+
+The CLI stores your JWT securely and automatically includes it with future requests.
+
+---
+
+## Remove Stored Token
+
+```bash
+./bin/redfish-inventory remove-token
 ```
 
-Example:
+---
 
-```ruby
-API_URL = "http://localhost:3000/api/v1/"
+# Assets
+
+## List Assets
+
+```bash
+./bin/redfish-inventory assets list
+```
+
+Displays all assets in a formatted table.
+
+---
+
+## Show Asset
+
+```bash
+./bin/redfish-inventory assets show <id>
+```
+
+Displays:
+
+- Asset details
+- Associated JSON fields
+- Option to display the stored JSON document
+
+---
+
+## Create Asset
+
+```bash
+./bin/redfish-inventory assets create <json-file> \
+name="Server 1" \
+rackId=1 \
+size=2 \
+position=4
+```
+
+Features:
+
+- Reads a JSON file
+- Searches JSON fields interactively
+- Allows multiple field selections
+- Maps JSON paths to friendly names
+- Uploads both metadata and original JSON
+
+---
+
+## Update Asset
+
+```bash
+./bin/redfish-inventory assets update <id> \
+name="New Name"
+```
+
+Supports updating:
+
+- Name
+- Rack
+- Position
+- Size
+
+---
+
+## Replace Asset JSON
+
+```bash
+./bin/redfish-inventory assets update-json <id> file.json
+```
+
+Uploads a new JSON payload while preserving asset metadata.
+
+---
+
+## Delete Asset
+
+```bash
+./bin/redfish-inventory assets delete <id>
+```
+
+---
+
+## View Historical JSON
+
+```bash
+./bin/redfish-inventory assets show-version <id> <version>
+```
+
+---
+
+## Add Asset Data Paths
+
+```bash
+./bin/redfish-inventory assets add-data <id>
+```
+
+Interactively searches JSON and adds additional tracked fields.
+
+---
+
+## Delete Asset Data
+
+```bash
+./bin/redfish-inventory assets delete-data <id>
+```
+
+---
+
+# Racks
+
+## List Racks
+
+```bash
+./bin/redfish-inventory racks list
+```
+
+Displays racks using a formatted table.
+
+---
+
+## Show Rack
+
+```bash
+./bin/redfish-inventory racks show <id>
+```
+
+Displays:
+
+- ID
+- Name
+- Size
+- Notes
+
+---
+
+## Create Rack
+
+```bash
+./bin/redfish-inventory racks create \
+name="Rack A" \
+size=42 \
+notes="GPU rack"
+```
+
+---
+
+## Update Rack
+
+```bash
+./bin/redfish-inventory racks update <id>
+```
+
+Supports updating:
+
+- Name
+- Size
+- Notes
+
+---
+
+## Delete Rack
+
+```bash
+./bin/redfish-inventory racks delete <id>
+```
+
+---
+
+## List Assets Within a Rack
+
+```bash
+./bin/redfish-inventory racks list-assets <id>
+```
+
+---
+
+# Templates
+
+## List Templates
+
+```bash
+./bin/redfish-inventory templates list
+```
+
+---
+
+## Show Template
+
+```bash
+./bin/redfish-inventory templates show <id>
+```
+
+Displays template information and associated JSON paths.
+
+---
+
+## Create Template
+
+```bash
+./bin/redfish-inventory templates create
+```
+
+Interactive creation of reusable JSON templates.
+
+---
+
+## Rename Template
+
+```bash
+./bin/redfish-inventory templates update-name <id>
+```
+
+---
+
+## Add Template Paths
+
+```bash
+./bin/redfish-inventory templates add-path <id>
+```
+
+---
+
+## Update Template Path
+
+```bash
+./bin/redfish-inventory templates update-path <template-id> <path-id>
+```
+
+---
+
+## Delete Template
+
+```bash
+./bin/redfish-inventory templates delete <id>
+```
+
+---
+
+# Roles
+
+## List Roles
+
+```bash
+./bin/redfish-inventory roles list
+```
+
+Displays:
+
+- Role ID
+- Role Name
+- Permission Count
+
+---
+
+## Show Role
+
+```bash
+./bin/redfish-inventory roles show <id>
+```
+
+Displays:
+
+- Role details
+- Assigned permissions
+
+---
+
+## Create Role
+
+```bash
+./bin/redfish-inventory roles create \
+--name="Rack Viewer" \
+--permissions=4,7
+```
+
+Creates a new role with the specified permissions.
+
+---
+
+## Add Permissions
+
+```bash
+./bin/redfish-inventory roles add-permissions <id> \
+--permissions=4,7
+```
+
+---
+
+## Remove Permissions
+
+```bash
+./bin/redfish-inventory roles remove-permissions <id> \
+--permissions=4,7
+```
+
+The CLI validates that the selected permissions currently exist on the role before attempting removal.
+
+---
+
+## Delete Role
+
+```bash
+./bin/redfish-inventory roles delete <id>
+```
+
+---
+
+# Permissions
+
+## List Available Permissions
+
+```bash
+./bin/redfish-inventory permissions list
+```
+
+Displays every available permission in a formatted table.
+
+---
+
+# Statistics
+
+## Overall Statistics
+
+```bash
+./bin/redfish-inventory stats
+```
+
+---
+
+## Rack Statistics
+
+```bash
+./bin/redfish-inventory stats racks
+```
+
+---
+
+## Asset Statistics
+
+```bash
+./bin/redfish-inventory stats assets
 ```
 
 ---
@@ -72,170 +413,97 @@ API_URL = "http://localhost:3000/api/v1/"
 Launch the interactive interface:
 
 ```bash
-redfish-inventory interactive
+./bin/redfish-inventory interactive
 ```
 
-or
-
-```bash
-redfish-inventory i
-```
-
----
-
-# Command Line Usage
+The interface provides menu-driven navigation for all major features.
 
 ## Assets
 
-### List assets
-
-```bash
-redfish-inventory assets list
-```
-
-### Show an asset
-
-```bash
-redfish-inventory assets show 5
-```
-
-### Create an asset
-
-```bash
-redfish-inventory assets create system.json \
-    name="Compute Node 01" \
-    rackId=1 \
-    size=2 \
-    position=10
-```
-
-### Update an asset
-
-```bash
-redfish-inventory assets update 5 \
-    name="Compute Node 02"
-```
-
-```bash
-redfish-inventory assets update 5 \
-    rackId=2 \
-    position=12
-```
-
-### Upload a new JSON version
-
-```bash
-redfish-inventory assets update-json 5 system.json
-```
-
-### View a previous version
-
-```bash
-redfish-inventory assets show-version 5 0
-```
-
-### Add tracked data
-
-```bash
-redfish-inventory assets add-data 5
-```
-
-Search for Redfish fields and choose which ones to track.
-
-### Delete tracked data
-
-```bash
-redfish-inventory assets delete-data 5
-```
-
-Displays the tracked fields and allows one to be removed.
-
-### Delete an asset
-
-```bash
-redfish-inventory assets delete 5
-```
+- List Assets
+- Show Asset
+- Create Asset
+- Update Asset
+- Delete Asset
+- Manage Asset Data
+- View JSON
+- Browse History
 
 ---
 
 ## Racks
 
-### List racks
-
-```bash
-redfish-inventory racks list
-```
-
-### Show a rack
-
-```bash
-redfish-inventory racks show 2
-```
-
-### Create a rack
-
-```bash
-redfish-inventory racks create \
-    name="Rack A" \
-    size=42 \
-    notes="GPU Rack"
-```
-
-### Update a rack
-
-```bash
-redfish-inventory racks update 2 \
-    name="Rack B"
-```
-
-### Delete a rack
-
-```bash
-redfish-inventory racks delete 2
-```
-
-### List assets within a rack
-
-```bash
-redfish-inventory racks list-assets 2
-```
+- List Racks
+- Show Rack
+- Create Rack
+- Delete Rack
+- Browse Rack Assets
 
 ---
 
-# Tracked Data
+## Templates
 
-Tracked data allows important Redfish values to be monitored without viewing the full JSON document.
-
-Examples include:
-
-- Total Memory
-- BIOS Version
-- Model
-- Serial Number
-- Logical CPU Count
-
-Tracked fields are linked to JSON paths and are automatically updated whenever a new JSON version is uploaded.
+- List Templates
+- Show Template
+- Create Template
+- Delete Template
+- Manage Template Paths
 
 ---
 
-# JSON Version History
+## Roles
 
-Each uploaded JSON file is stored as a new version.
-
-You can:
-
-- Browse previous versions
-- Compare tracked values between versions
-- View the original JSON for any version
+- List Roles
+- Show Role
+- Create Role
+- Alter Permissions
+- Delete Role
 
 ---
 
-# Technologies
+## Permissions
+
+- Browse all available permissions
+
+---
+
+## Statistics
+
+- Overall statistics
+- Rack statistics
+- Asset statistics
+
+---
+
+# Built With
 
 - Ruby
-- dry-cli
-- tty-prompt
+- Dry::CLI
+- TTY::Prompt
+- TTY::Table
 - Net::HTTP
 - JSON
-- Redfish API
+
+---
+
+# API
+
+The CLI communicates with the Asset Rack REST API using authenticated JSON requests.
+
+Authentication uses JWT Bearer tokens stored locally after login.
+
+---
+
+# Project Structure
+
+```
+lib/
+├── commands/
+├── dry_cli/
+├── interactive/
+├── auth/
+├── api_client.rb
+├── config.rb
+└── json_field_selector.rb
+```
 
