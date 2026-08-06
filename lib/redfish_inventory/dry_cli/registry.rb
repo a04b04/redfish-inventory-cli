@@ -41,6 +41,17 @@ module RedfishInventory
       register 'login', Auth::Login
       register 'remove-token', Auth::RemoveToken
 
+      register 'permissions list', Permissions::List
+
+      register 'roles list', Roles::List
+      register 'roles show', Roles::Show
+      register 'roles create', Roles::Create
+      register 'roles delete', Roles::Delete
+      register 'roles add-permissions', Roles::AddPermissions
+      register 'roles remove-permissions', Roles::RemovePermissions
+
+      register 'user create', Users::Create
+
     end
   end
 end

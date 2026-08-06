@@ -4,8 +4,11 @@ module RedfishInventory
   module Commands
     class Stats
       def self.overview
-        assets = ApiClient.get('/assets')
-        racks = ApiClient.get('/racks')
+        assets_data = ApiClient.get('/assets')
+        assets = assets_data['assets']
+        racks_data = ApiClient.get('/racks')
+        racks = racks_data['racks']
+
 
         asset_count = assets.length
         rack_count = racks.length
@@ -44,8 +47,10 @@ module RedfishInventory
       end
 
       def self.racks
-        assets = ApiClient.get('/assets')
-        racks = ApiClient.get('/racks')
+        assets_data = ApiClient.get('/assets')
+        assets = assets_data['assets']
+        racks_data = ApiClient.get('/racks')
+        racks = racks_data['racks']
 
         puts
         puts 'Rack Statistics'
@@ -81,7 +86,8 @@ module RedfishInventory
       end
 
       def self.assets
-        assets = ApiClient.get('/assets')
+        assets_data = ApiClient.get('/assets')
+        assets = assets_data['assets']
 
         asset_count = assets.length
 

@@ -1,14 +1,41 @@
 # frozen_string_literal: true
 
 require 'json'
+require 'tty-table'
 
 module RedfishInventory
   module Commands
     class Racks
 
       def self.list
-        racks = ApiClient.get("/racks")
-        puts JSON.pretty_generate(racks)
+        data = ApiClient.get('/racks')
+        racks = data['racks'] || []
+
+        if racks.empty?
+          puts 'No racks found'
+          return
+        end
+
+        rows = racks.map do |rack|
+          [
+            rack['id'],
+            rack['name'],
+            "#{rack['size']}U",
+            rack['notes'].to_s.empty? ? '-' : rack['notes']
+          ]
+        end
+
+        table = TTY::Table.new(
+          header: ['ID', 'Name', 'Size', 'Notes'],
+          rows: rows
+        )
+
+        puts
+        puts table.render(:unicode, padding: [0, 1])
+
+        puts
+        puts "Page #{data['page']} of #{data['totalPages']}"
+        puts "Total racks: #{data['total']}"
       end
 
 
@@ -39,8 +66,30 @@ module RedfishInventory
           puts 'Usage: racks show <id>'
           return
         end
+
         rack = ApiClient.get("/racks/#{id}")
-        puts JSON.pretty_generate(rack)
+
+        notes =
+          if rack['notes'].to_s.empty?
+            '-'
+          else
+            rack['notes']
+          end
+
+        table = TTY::Table.new(
+          header: ['ID', 'Name', 'Size', 'Notes'],
+          rows: [
+            [
+              rack['id'],
+              rack['name'],
+              "#{rack['size']}U",
+              notes
+            ]
+          ]
+        )
+
+        puts
+        puts table.render(:unicode, padding: [0, 1])
       end
 
       def self.update_rack(id, updates)

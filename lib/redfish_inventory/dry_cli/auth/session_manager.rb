@@ -32,7 +32,7 @@ module RedfishInventory
         request['Content-Type'] = 'application/json'
         request.body = JSON.generate(
           {
-            'token' => TokenStore.refresh_token
+            'refresh' => TokenStore.refresh_token
           }
         )
 

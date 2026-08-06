@@ -4,9 +4,7 @@ require_relative 'redfish_inventory/dry_cli/auth/login'
 require_relative 'redfish_inventory/auth/token_store'
 require_relative 'redfish_inventory/dry_cli/auth/remove_token'
 
-require_relative 'redfish_inventory/auth/token_store'
 require_relative 'redfish_inventory/dry_cli/auth/session_manager'
-
 
 require_relative 'redfish_inventory/json_field_selector'
 
@@ -29,6 +27,9 @@ require_relative 'redfish_inventory/interactive/racks_menu'
 require_relative 'redfish_inventory/interactive/templates_menu'
 require_relative 'redfish_inventory/interactive/stats_menu'
 require_relative 'redfish_inventory/interactive/app'
+require_relative 'redfish_inventory/interactive/roles_menu'
+require_relative 'redfish_inventory/interactive/permissions_menu'
+
 
 require_relative 'redfish_inventory/dry_cli/assets/list'
 require_relative 'redfish_inventory/dry_cli/assets/show'
@@ -57,6 +58,21 @@ require_relative 'redfish_inventory/dry_cli/templates/delete'
 require_relative 'redfish_inventory/dry_cli/templates/update_name'
 require_relative 'redfish_inventory/dry_cli/templates/add_path'
 require_relative 'redfish_inventory/dry_cli/templates/update_path'
+
+require_relative 'redfish_inventory/commands/permissions'
+require_relative 'redfish_inventory/dry_cli/permissions/list'
+
+require_relative 'redfish_inventory/commands/roles'
+require_relative 'redfish_inventory/dry_cli/roles/list'
+require_relative 'redfish_inventory/dry_cli/roles/show'
+require_relative 'redfish_inventory/dry_cli/roles/create'
+require_relative 'redfish_inventory/dry_cli/roles/delete'
+require_relative 'redfish_inventory/dry_cli/roles/add_permission'
+require_relative 'redfish_inventory/dry_cli/roles/remove_permission'
+
+require_relative 'redfish_inventory/commands/users'
+require_relative 'redfish_inventory/dry_cli/users/create'
+
 
 require_relative 'redfish_inventory/dry_cli/registry'
 

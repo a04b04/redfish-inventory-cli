@@ -25,6 +25,8 @@ module RedfishInventory
           menu.choice 'Racks', :racks
           menu.choice 'Templates', :templates
           menu.choice 'Stats', :stats
+          menu.choice 'Roles', :roles
+          menu.choice 'Permissions', :permissions
           menu.choice 'Exit', :exit
         end
       end

@@ -6,7 +6,7 @@ module RedfishInventory
       def initialize
         @prompt = TTY::Prompt.new(
           symbols: {
-            marker: ')'
+            marker: '>'
           },
           active_color: :green
         )
@@ -64,7 +64,8 @@ module RedfishInventory
 
       private 
       def select_asset(message = 'Select an asset:')
-        assets = ApiClient.get('/assets')
+        data = ApiClient.get('/assets')
+        assets = data['assets']
 
         if assets.empty?
           puts Theme.warning('No assets found')

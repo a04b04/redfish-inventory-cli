@@ -14,6 +14,10 @@ module RedfishInventory
             TemplatesMenu.new.select
           when :stats
             StatsMenu.new.select
+          when :roles
+            RolesMenu.new.select
+          when :permissions
+            PermissionsMenu.new.select
           when :exit
             break
           end

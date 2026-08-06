@@ -53,7 +53,8 @@ module RedfishInventory
       private
 
       def select_rack(message = 'Select a rack:')
-        racks = ApiClient.get('/racks')
+        data = ApiClient.get('/racks')
+        racks = data['racks']
 
         if racks.empty?
           puts Theme.warning('No racks found')

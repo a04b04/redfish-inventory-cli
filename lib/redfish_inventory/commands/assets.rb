@@ -29,7 +29,8 @@ module RedfishInventory
 
       # Methods for what the API allows below 
       def self.list
-        assets = ApiClient.get('/assets')
+        data = ApiClient.get('/assets')
+        assets = data['assets'] || []
 
         if assets.empty?
           puts 'No assets found'
@@ -80,17 +81,19 @@ module RedfishInventory
           puts 'Usage: assets show <id>'
           return
         end
+
         asset = ApiClient.get("/assets/#{id}")
         print_asset_summary(asset)
 
-        print "\nWould you like to see JSON? (y/n)"
+        print "\nWould you like to see JSON? (y/n): "
         answer = $stdin.gets&.chomp&.downcase
-        
+
         return unless answer == 'y'
+
         json_text = asset.dig('json', 'text')
 
-        puts 
-        puts "Json for asset #{id}"
+        puts
+        puts "JSON for asset #{id}:"
         puts JSON.pretty_generate(JSON.parse(json_text))
       end
         
@@ -122,7 +125,8 @@ module RedfishInventory
           }
         }
 
-        updated_asset = ApiClient.post("/assets/#{id}", payload)
+        data = ApiClient.post("/assets/#{id}", payload)
+        updated_asset = data['assets']
 
         puts "JSON updated for asset #{id}"
         print_asset_summary(updated_asset)
@@ -155,7 +159,8 @@ module RedfishInventory
           payload[field] = payload[field].to_i if payload.key?(field)
         end
 
-        updated_asset = ApiClient.patch("/assets/#{id}", payload)
+        data = ApiClient.patch("/assets/#{id}", payload)
+        updated_asset = data['assets']
 
         puts "Asset #{id} updated"
         print_asset_summary(updated_asset)

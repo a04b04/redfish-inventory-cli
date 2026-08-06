@@ -38,7 +38,7 @@ module RedfishInventory
       end
 
       def self.refresh_token
-        load_session&.dig('refresh_token')
+        load_session&.dig('refresh')
       end
 
       def self.access_expired?
