@@ -6,6 +6,7 @@ The CLI provides both a traditional command-based interface and an interactive t
 
 ---
 
+
 # Features
 
 - 🔐 JWT authentication
@@ -18,6 +19,16 @@ The CLI provides both a traditional command-based interface and an interactive t
 - 🔑 Permission browser
 - 🎨 Pretty terminal tables using TTY::Table
 
+---
+
+# Configuration
+
+The CLI needs to know the URL of the Asset Rack API.
+
+Open:
+
+```text
+lib/redfish_inventory/config.rb
 ---
 
 # Installation
