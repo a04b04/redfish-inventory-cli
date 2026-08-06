@@ -1,4 +1,11 @@
 # frozen_string_literal: true
+ 
+require_relative 'redfish_inventory/config_store'
+require_relative 'redfish_inventory/config'
+require_relative 'redfish_inventory/api_client'
+
+require_relative 'redfish_inventory/dry_cli/config/set_url'
+
 
 require_relative 'redfish_inventory/dry_cli/auth/login'
 require_relative 'redfish_inventory/auth/token_store'
@@ -9,8 +16,6 @@ require_relative 'redfish_inventory/dry_cli/auth/session_manager'
 require_relative 'redfish_inventory/json_field_selector'
 
 require_relative 'redfish_inventory/errors'
-require_relative 'redfish_inventory/config'
-require_relative 'redfish_inventory/api_client'
 
 require_relative 'redfish_inventory/commands/assets'
 require_relative 'redfish_inventory/commands/racks'

@@ -50,6 +50,8 @@ module RedfishInventory
       register 'roles add-permissions', Roles::AddPermissions
       register 'roles remove-permissions', Roles::RemovePermissions
 
+      register 'config set-url', Config::SetUrl
+
       register 'user create', Users::Create
 
     end
