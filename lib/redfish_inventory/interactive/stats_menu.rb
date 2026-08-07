@@ -25,7 +25,6 @@ module RedfishInventory
             cycle: true
           ) do |menu|
             menu.choice 'Show General Stats', :show
-            menu.choice 'Show Rack Stats', :racks
             menu.choice 'Show Asset Stats', :assets
             menu.choice 'Back', :back
           end
@@ -33,9 +32,6 @@ module RedfishInventory
           case choice
           when :show
             Commands::Stats.overview
-            @prompt.keypress('Press any key to go back...')
-          when :racks
-            Commands::Stats.racks
             @prompt.keypress('Press any key to go back...')
           when :assets
             Commands::Stats.assets

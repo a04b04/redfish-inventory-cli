@@ -22,7 +22,6 @@ module RedfishInventory
           cycle: true
         ) do |menu|
           menu.choice 'Assets', :assets
-          menu.choice 'Racks', :racks
           menu.choice 'Templates', :templates
           menu.choice 'Stats', :stats
           menu.choice 'Roles', :roles

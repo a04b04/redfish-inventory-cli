@@ -18,17 +18,14 @@ require_relative 'redfish_inventory/json_field_selector'
 require_relative 'redfish_inventory/errors'
 
 require_relative 'redfish_inventory/commands/assets'
-require_relative 'redfish_inventory/commands/racks'
 
 require_relative 'redfish_inventory/commands/stats'
 require_relative 'redfish_inventory/dry_cli/stats/stats'
-require_relative 'redfish_inventory/dry_cli/stats/racks'
 require_relative 'redfish_inventory/dry_cli/stats/assets'
 
 require_relative 'redfish_inventory/interactive/theme'
 require_relative 'redfish_inventory/interactive/main_menu'
 require_relative 'redfish_inventory/interactive/assets_menu'
-require_relative 'redfish_inventory/interactive/racks_menu'
 require_relative 'redfish_inventory/interactive/templates_menu'
 require_relative 'redfish_inventory/interactive/stats_menu'
 require_relative 'redfish_inventory/interactive/app'
@@ -46,12 +43,19 @@ require_relative 'redfish_inventory/dry_cli/assets/show_version'
 require_relative 'redfish_inventory/dry_cli/assets/add_data'
 require_relative 'redfish_inventory/dry_cli/assets/delete_data'
 
-require_relative 'redfish_inventory/dry_cli/racks/list'
-require_relative 'redfish_inventory/dry_cli/racks/show'
-require_relative 'redfish_inventory/dry_cli/racks/create'
-require_relative 'redfish_inventory/dry_cli/racks/update'
-require_relative 'redfish_inventory/dry_cli/racks/delete'
-require_relative 'redfish_inventory/dry_cli/racks/list_assets'
+#v2 assets requirements
+require_relative 'redfish_inventory/dry_cli/assets/create/create_server'
+require_relative 'redfish_inventory/dry_cli/assets/create/create_storage'
+require_relative 'redfish_inventory/dry_cli/assets/create/create_generic'
+require_relative 'redfish_inventory/dry_cli/assets/create/create_pdu'
+require_relative 'redfish_inventory/dry_cli/assets/create/create_ups'
+
+require_relative 'redfish_inventory/dry_cli/assets/list/pdu'
+require_relative 'redfish_inventory/dry_cli/assets/list/servers'
+require_relative 'redfish_inventory/dry_cli/assets/list/storage'
+require_relative 'redfish_inventory/dry_cli/assets/list/ups'
+
+
 
 require_relative 'redfish_inventory/dry_cli/interactive'
 

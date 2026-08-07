@@ -17,12 +17,18 @@ module RedfishInventory
       register 'assets add-data', Assets::AddData
       register 'assets delete-data', Assets::DeleteData
 
-      register 'racks list', Racks::List
-      register 'racks show', Racks::Show
-      register 'racks create', Racks::Create
-      register 'racks update', Racks::Update
-      register 'racks delete', Racks::Delete
-      register 'racks list-assets', Racks::ListAssets
+
+      #V2 stuff
+      register 'assets create-server', Assets::CreateServer
+      register 'assets create-storage', Assets::CreateStorage
+      register 'assets create-generic', Assets::CreateGeneric
+      register 'assets create-pdu', Assets::CreatePdu
+      register 'assets create-ups', Assets::CreateUps
+
+      register 'assets list-servers', Assets::ListServers
+      register 'assets list-pdu', Assets::ListPdus
+      register 'assets list-storage', Assets::ListStorage
+      register 'assets list-ups', Assets::ListUps
 
       register 'interactive', Interactive, aliases: ['i']
 
@@ -35,7 +41,6 @@ module RedfishInventory
       register 'templates update-path', Templates::UpdatePath
 
       register 'stats', Stats::Stats
-      register 'stats racks', Stats::Racks
       register 'stats assets', Stats::Assets
 
       register 'login', Auth::Login

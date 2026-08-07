@@ -512,7 +512,104 @@ module RedfishInventory
         puts "'#{selected_field['name']}' deleted from asset #{asset_id}"
       end
 
+
+      #V2 additions underneath hereish will see what to get rid of up top to see
       
+
+      #V2 Creation stuff
+      def self.create_server(payload)
+        server = ApiClient.post('/assets/servers', payload)
+
+        puts 
+        puts "Server #{server['name']} created successfully"
+
+        server
+      end
+
+      def self.create_storage(payload)
+        storage = ApiClient.post('/assets/storages', payload)
+
+        puts 
+        puts "Storage #{storage['name']} created successfully"
+
+        storage
+      end
+
+      def self.create_generic(payload)
+        asset = ApiClient.post('/assets/generic', payload)
+        puts "Generic asset '#{asset['name']}' created successfully"
+        asset
+      end
+
+      def self.create_ups(payload)
+        ups = ApiClient.post('/assets/ups', payload)
+        puts "Uninterruptible Power Supply '#{ups['name']}' created successfully"
+        ups
+      end
+
+      def self.create_pdu(payload)
+        pdu = ApiClient.post('/assets/pdu', payload)
+        puts "Power distribution unit '#{pdu}' created successfully"
+        pdu
+      end
+      
+      # V2 Listing stuff
+      def self.list_servers
+        data = ApiClient.get('/assets/servers')
+        servers = data['servers'] || []
+
+        if servers.empty?
+          puts 'No servers found'
+          return
+        end
+
+        servers.each do |server|
+          puts server
+        end
+      end
+
+      def self.list_pdu
+        data = ApiClient.get('/assets/pdu')
+        pdus = data['pdus'] || []
+
+        if pdus.empty?
+          puts 'No PDUs found'
+          return
+        end
+
+        pdus.each do |pdu|
+          puts pdu
+        end
+      end
+
+      def self.list_storage
+        data = ApiClient.get('/assets/storage')
+        storage = data['storage'] || []
+
+        if storage.empty?
+          puts 'No storage assets found'
+          return
+        end
+
+        storage.each do |storage_asset|
+          puts storage_asset
+        end
+      end
+
+      def self.list_ups
+        data = ApiClient.get('/assets/ups')
+        ups = data['ups'] || []
+
+        if ups.empty?
+          puts 'No UPS assets found'
+          return
+        end
+
+        ups.each do |ups_asset|
+          puts ups_asset
+        end
+      end
+
       
     end
   end

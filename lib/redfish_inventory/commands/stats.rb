@@ -46,45 +46,6 @@ module RedfishInventory
         puts
       end
 
-      def self.racks
-        assets_data = ApiClient.get('/assets')
-        assets = assets_data['assets']
-        racks_data = ApiClient.get('/racks')
-        racks = racks_data['racks']
-
-        puts
-        puts 'Rack Statistics'
-        puts '-' * 60
-
-        racks.each do |rack|
-          rack_assets = assets.select do |asset|
-            asset['rackId'] == rack['id']
-          end
-
-          used_units = rack_assets.sum do |asset|
-            asset['size'].to_i
-          end
-
-          total_units = rack['size'].to_i
-          free_units = total_units - used_units
-
-          utilisation =
-            if total_units.zero?
-              0
-            else
-              used_units.to_f / total_units * 100
-            end
-
-          puts "Rack: #{rack['name']} (ID: #{rack['id']})"
-          puts "Assets: #{rack_assets.length}"
-          puts "Capacity: #{total_units}U"
-          puts "Used: #{used_units}U"
-          puts "Free: #{free_units}U"
-          puts format('Utilisation: %.1f%%', utilisation)
-          puts '-' * 60
-        end
-      end
-
       def self.assets
         assets_data = ApiClient.get('/assets')
         assets = assets_data['assets']
