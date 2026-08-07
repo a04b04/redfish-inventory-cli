@@ -1,23 +1,24 @@
 # frozen_string_literal: true
 
 require 'dry/cli'
+require 'json'
 
 module RedfishInventory
   module DryCLI
     module Assets
       class UpdateJson < Dry::CLI::Command
-        desc 'Replace an asset JSON payload'
+        desc 'Upload a new JSON version for an asset'
 
         argument :id,
                  required: true,
                  desc: 'Asset ID'
 
-        argument :file_path,
+        argument :file,
                  required: true,
-                 desc: 'Path to the replacement JSON file'
+                 desc: 'Path to JSON file'
 
-        def call(id:, file_path:, **)
-          Commands::Assets.update_json(id, file_path)
+        def call(id:, file:, **)
+          Commands::Assets.update_json(id, file)
         end
       end
     end

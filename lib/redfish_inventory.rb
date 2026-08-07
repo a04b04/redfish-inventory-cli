@@ -37,7 +37,7 @@ require_relative 'redfish_inventory/dry_cli/assets/list'
 require_relative 'redfish_inventory/dry_cli/assets/show'
 require_relative 'redfish_inventory/dry_cli/assets/create'
 require_relative 'redfish_inventory/dry_cli/assets/update'
-require_relative 'redfish_inventory/dry_cli/assets/update_json'
+#require_relative 'redfish_inventory/dry_cli/assets/update_json'
 require_relative 'redfish_inventory/dry_cli/assets/delete'
 require_relative 'redfish_inventory/dry_cli/assets/show_version'
 require_relative 'redfish_inventory/dry_cli/assets/add_data'
@@ -62,6 +62,10 @@ require_relative 'redfish_inventory/dry_cli/assets/show/ups'
 
 require_relative 'redfish_inventory/dry_cli/assets/delete/delete'
 
+require_relative 'redfish_inventory/dry_cli/assets/update/asset'
+require_relative 'redfish_inventory/dry_cli/assets/update/json'
+
+require_relative 'redfish_inventory/dry_cli/assets/history/json_history'
 
 
 require_relative 'redfish_inventory/dry_cli/interactive'

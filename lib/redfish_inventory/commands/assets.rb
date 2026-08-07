@@ -7,22 +7,44 @@ module RedfishInventory
     class Assets
 
       def self.print_asset_summary(asset)
-        puts ""
-        puts "ID #{asset['id']}"
-        puts "Name #{asset['name']}"
-        puts "Rack #{asset['rackId']}"
-        puts "Size: #{asset['size']}U"
-        puts "Position: #{asset['position']}"
+        puts
 
-        data_fields = asset['data'] || []
+        puts "ID: #{asset['id']}"
+        puts "Name: #{asset['name']}"
 
-        unless data_fields.empty?
+        puts "Notes: #{asset['notes']}" if asset['notes']
+        puts "Position: #{asset['position']}" unless asset['position'].nil?
+
+        puts "Model: #{asset['model']}" if asset['model']
+        puts "Capacity: #{asset['capacity']}" if asset['capacity']
+        puts "Outlet Count: #{asset['outletCount']}" if asset['outletCount']
+
+        storage = asset['storage']
+        puts "Storage ID: #{storage['id']}" if storage
+
+        group = asset['group']
+
+        if group
+          puts "Group: #{group['name']} (ID: #{group['id']})"
+        end
+
+        tags = asset['tags'] || []
+
+        unless tags.empty?
+          tag_names = tags.map { |tag| tag['name'] }.join(', ')
+          puts "Tags: #{tag_names}"
+        end
+
+        paths = asset['paths'] || []
+
+        unless paths.empty?
           puts 'Data:'
 
-          data_fields.each do |field|
-            puts "#{field['name']}: #{field['value']}"
+          paths.each do |field|
+            puts "  #{field['name']}: #{field['value']}"
           end
         end
+
         puts '-' * 40
       end
 
@@ -63,10 +85,16 @@ module RedfishInventory
             puts "Asset #{id} not found"
             next
           end
+
           puts
           puts "JSON for asset #{id}:"
 
-          json_text = asset.dig('json', 'text')
+          json_text = asset.dig('json', 'rawJson')
+
+          if json_text.nil? || json_text.empty?
+            puts "Asset #{id} has no JSON"
+            next
+          end
 
           begin
             puts JSON.pretty_generate(JSON.parse(json_text))
@@ -643,6 +671,113 @@ module RedfishInventory
         ApiClient.delete("/assets/#{id}")
         puts "Asset #{id} deleted"
       end
+
+
+
+      #update stuff
+      
+      def self.update_asset(id, payload)
+        asset = ApiClient.patch("/assets/#{id}", payload)
+
+        puts "Asset #{id} updated successfully"
+        asset
+      end
+
+      def self.update_json(id, file_path)
+        unless File.file?(file_path)
+          puts "File not found: #{file_path}"
+          return
+        end
+
+        json_text = File.read(file_path)
+
+        begin
+          JSON.parse(json_text)
+        rescue JSON::ParserError => error
+          puts "Invalid JSON file: #{error.message}"
+          return
+        end
+
+        payload = {
+          'json' => json_text
+        }
+
+        history_entry = ApiClient.post(
+          "/assets/#{id}/history",
+          payload
+        )
+
+        puts "New JSON version added to asset #{id}"
+
+        history_entry
+      end
+
+      def self.history(asset_id)
+        data = ApiClient.get("/assets/#{asset_id}/history")
+        history = data['history'] || []
+
+        if history.empty?
+          puts "No history found for asset #{asset_id}"
+          return
+        end
+
+        rows = history.map do |entry|
+          [
+            entry['id']
+          ]
+        end
+
+        table = TTY::Table.new(
+          header: ['History ID'],
+          rows: rows
+        )
+
+        puts
+        puts table.render(:unicode, padding: [0, 1])
+
+        print "\nWould you like to view JSON? (y/n): "
+        answer = $stdin.gets&.chomp&.downcase
+
+        return unless answer == 'y'
+
+        print 'Enter history IDs separated by commas: '
+        input = $stdin.gets&.chomp
+
+        selected_ids = input
+                      .to_s
+                      .split(',')
+                      .map(&:strip)
+                      .reject(&:empty?)
+                      .map(&:to_i)
+                      .uniq
+
+        selected_ids.each do |id|
+          entry = history.find do |history_entry|
+            history_entry['id'].to_i == id
+          end
+
+          unless entry
+            puts "History ID #{id} not found"
+            next
+          end
+
+          puts
+          puts "History #{id}"
+          puts '-' * 40
+
+          begin
+            puts JSON.pretty_generate(
+              JSON.parse(entry['rawJson'])
+            )
+          rescue JSON::ParserError
+            puts entry['rawJson']
+          end
+        end
+      end
+
+
+
+      
 
       
     end

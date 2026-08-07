@@ -14,11 +14,11 @@ module RedfishInventory
       register 'assets update-json', Assets::UpdateJson
       register 'assets delete', Assets::Delete
       register 'assets show-version', Assets::ShowVersion
-      register 'assets add-data', Assets::AddData
+      #register 'assets add-data', Assets::AddData
       register 'assets delete-data', Assets::DeleteData
 
 
-      #V2 stuff
+      #V2 stuff Asset Stuff
       register 'assets create-server', Assets::CreateServer
       register 'assets create-storage', Assets::CreateStorage
       register 'assets create-generic', Assets::CreateGeneric
@@ -37,6 +37,12 @@ module RedfishInventory
       register 'assets show-storage', Assets::ShowStorage
 
       register 'assets delete', Assets::DeleteAsset
+
+      register 'assets update-json', Assets::UpdateJson
+      register 'assets update', Assets::UpdateAsset
+
+      register 'assets history', Assets::History
+
 
   
 
