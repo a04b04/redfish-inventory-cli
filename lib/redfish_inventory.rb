@@ -60,6 +60,8 @@ require_relative 'redfish_inventory/dry_cli/assets/show/servers'
 require_relative 'redfish_inventory/dry_cli/assets/show/storage'
 require_relative 'redfish_inventory/dry_cli/assets/show/ups'
 
+require_relative 'redfish_inventory/dry_cli/assets/delete/delete'
+
 
 
 require_relative 'redfish_inventory/dry_cli/interactive'

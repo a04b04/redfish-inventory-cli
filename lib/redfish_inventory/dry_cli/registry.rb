@@ -36,6 +36,8 @@ module RedfishInventory
       register 'assets show-ups', Assets::ShowUps
       register 'assets show-storage', Assets::ShowStorage
 
+      register 'assets delete', Assets::DeleteAsset
+
   
 
       register 'interactive', Interactive, aliases: ['i']

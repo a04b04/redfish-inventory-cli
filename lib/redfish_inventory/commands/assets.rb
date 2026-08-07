@@ -637,6 +637,13 @@ module RedfishInventory
         puts json.pretty_generate(pdu)
       end
 
+      #delete stuff
+      
+      def self.delete(id)
+        ApiClient.delete("/assets/#{id}")
+        puts "Asset #{id} deleted"
+      end
+
       
     end
   end
