@@ -25,10 +25,18 @@ module RedfishInventory
       register 'assets create-pdu', Assets::CreatePdu
       register 'assets create-ups', Assets::CreateUps
 
+      
       register 'assets list-servers', Assets::ListServers
       register 'assets list-pdu', Assets::ListPdus
       register 'assets list-storage', Assets::ListStorage
       register 'assets list-ups', Assets::ListUps
+
+      register 'assets show-server', Assets::ShowServer
+      register 'assets show-pdu', Assets::ShowPdu
+      register 'assets show-ups', Assets::ShowUps
+      register 'assets show-storage', Assets::ShowStorage
+
+  
 
       register 'interactive', Interactive, aliases: ['i']
 

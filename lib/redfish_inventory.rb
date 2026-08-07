@@ -55,6 +55,11 @@ require_relative 'redfish_inventory/dry_cli/assets/list/servers'
 require_relative 'redfish_inventory/dry_cli/assets/list/storage'
 require_relative 'redfish_inventory/dry_cli/assets/list/ups'
 
+require_relative 'redfish_inventory/dry_cli/assets/show/pdu'
+require_relative 'redfish_inventory/dry_cli/assets/show/servers'
+require_relative 'redfish_inventory/dry_cli/assets/show/storage'
+require_relative 'redfish_inventory/dry_cli/assets/show/ups'
+
 
 
 require_relative 'redfish_inventory/dry_cli/interactive'

@@ -516,7 +516,7 @@ module RedfishInventory
       #V2 additions underneath hereish will see what to get rid of up top to see
       
 
-      #V2 Creation stuff
+      #V2 Creating the stuff
       def self.create_server(payload)
         server = ApiClient.post('/assets/servers', payload)
 
@@ -553,7 +553,7 @@ module RedfishInventory
         pdu
       end
       
-      # V2 Listing stuff
+      # V2 Listing all of the stuff
       def self.list_servers
         data = ApiClient.get('/assets/servers')
         servers = data['servers'] || []
@@ -583,8 +583,8 @@ module RedfishInventory
       end
 
       def self.list_storage
-        data = ApiClient.get('/assets/storage')
-        storage = data['storage'] || []
+        data = ApiClient.get('/assets/storages')
+        storage = data['storages'] || []
 
         if storage.empty?
           puts 'No storage assets found'
@@ -608,6 +608,33 @@ module RedfishInventory
         ups.each do |ups_asset|
           puts ups_asset
         end
+      end
+
+
+      #showing individual of the stuff
+      
+      def self.show_server(id)
+        server = ApiClient.get("/assets/servers/#{id}")
+
+        puts JSON.pretty_generate(server)
+      end
+
+      def self.show_storage(id)
+        storage = ApiClient.get("/assets/storages/#{id}")
+
+        puts json.pretty_generate(storage)
+      end
+
+      def self.show_ups
+        ups = ApiClient.get("/assets/ups/#{id}")
+
+        puts json.pretty_generate(ups)
+      end
+
+      def self.show_pdu
+        pdu = ApiClient.get("/assets/pdu/#{id}")
+
+        puts json.pretty_generate(pdu)
       end
 
       
