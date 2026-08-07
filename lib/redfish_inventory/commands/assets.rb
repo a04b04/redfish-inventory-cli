@@ -717,61 +717,43 @@ module RedfishInventory
         history = data['history'] || []
 
         if history.empty?
-          puts "No history found for asset #{asset_id}"
+          puts "No JSON history found for asset #{asset_id}"
           return
         end
 
-        rows = history.map do |entry|
-          [
-            entry['id']
-          ]
+        puts
+        puts 'Available JSON versions:'
+        puts
+
+        history.each_with_index do |_entry, index|
+          puts "#{index + 1}. Version #{index + 1}"
         end
 
-        table = TTY::Table.new(
-          header: ['History ID'],
-          rows: rows
-        )
+        print "\nSelect a version: "
+        selection = $stdin.gets&.chomp.to_i
 
-        puts
-        puts table.render(:unicode, padding: [0, 1])
+        if selection < 1 || selection > history.length
+          puts 'Invalid version'
+          return
+        end
 
-        print "\nWould you like to view JSON? (y/n): "
+        entry = history[selection - 1]
+
+        print "Would you like to view JSON version #{selection}? (y/n): "
         answer = $stdin.gets&.chomp&.downcase
 
         return unless answer == 'y'
 
-        print 'Enter history IDs separated by commas: '
-        input = $stdin.gets&.chomp
+        puts
+        puts "JSON Version #{selection}"
+        puts '-' * 40
 
-        selected_ids = input
-                      .to_s
-                      .split(',')
-                      .map(&:strip)
-                      .reject(&:empty?)
-                      .map(&:to_i)
-                      .uniq
-
-        selected_ids.each do |id|
-          entry = history.find do |history_entry|
-            history_entry['id'].to_i == id
-          end
-
-          unless entry
-            puts "History ID #{id} not found"
-            next
-          end
-
-          puts
-          puts "History #{id}"
-          puts '-' * 40
-
-          begin
-            puts JSON.pretty_generate(
-              JSON.parse(entry['rawJson'])
-            )
-          rescue JSON::ParserError
-            puts entry['rawJson']
-          end
+        begin
+          puts JSON.pretty_generate(
+            JSON.parse(entry['rawJson'])
+          )
+        rescue JSON::ParserError
+          puts entry['rawJson']
         end
       end
 
